@@ -2,50 +2,52 @@
 
 ## Current Phase
 
-**Phase 2 — Database and persistence** (completed this session)
+**Phase 3 — Authentication and account security** (completed this session)
 
 ## Completed Work
 
 ### Phase 0
 - Repository audited (was empty)
 - Stack decisions confirmed
-- Implementation plan established
 
 ### Phase 1
 - Next.js App Router + TypeScript + Tailwind foundation
-- Shared dashboard shell with sidebar navigation
-- Distinct Coding and Automation workspaces
-- Settings placeholder page
+- Shared dashboard shell (Coding / Automation / Settings)
 - Reusable UI primitives
 - Initial documentation
 
 ### Phase 2
-- Drizzle ORM + Turso/libSQL client integration
-- Full initial schema: users, projects, repositories, conversations, messages, agent_tasks, workflows, workflow_versions, workflow_executions, credit_accounts, credit_ledger_entries
-- Ownership-enforced query helpers (`src/lib/db/queries.ts`)
-- Local file DB fallback for development
-- Drizzle Kit config and npm scripts
-- `docs/DATABASE.md`
+- Drizzle ORM + Turso/libSQL schema and client
+- Ownership-enforced query helpers
+- Credit account stubs
+- docs/DATABASE.md
+
+### Phase 3
+- Auth.js v5 (next-auth@5.0.0-beta.32) with Credentials provider
+- Database sessions via @auth/drizzle-adapter
+- Schema extensions: passwordHash, accounts, sessions, verificationTokens
+- Register + Login pages and server actions (bcrypt + zod validation)
+- Middleware + dashboard layout protection (`requireUser`)
+- Settings page shows live user + credit balance
+- Sign-out in sidebar
+- docs/SECURITY.md
 
 ## Next Phase
 
-**Phase 3 — Authentication and account security**
+**Phase 4 — AI provider adapters**
 
-- Auth.js integration
-- Session handling
-- Protect routes / server actions
-- Rate limiting basics
-- Tenant isolation tests
+- Common provider interface
+- DeepSeek, Claude, OpenAI adapters
+- Model configuration and usage metadata capture
 
 ## Known Limitations
 
-- `npm install` of Drizzle packages may still be incomplete in the remote sandbox; run `npm install` locally
-- Migrations have not been generated/applied against a live Turso instance yet (requires your Turso credentials)
-- No Auth.js tables yet (Phase 3)
-- Credit ledger is schema-only; no concurrent-safe mutation logic yet (Phase 8)
-- Git commit/push may still be blocked by sandbox constraints
+- Auth packages may need `npm install` locally (sandbox installs are unreliable)
+- No rate limiting on auth endpoints yet
+- No email verification
+- Auth.js v5 is still beta (monitor advisories; Better Auth is a future option)
+- Migrations not yet applied to a live Turso instance
 
-## Branch & Commits
+## Branch
 
-- Working on `main`
-- Commits made when environment allows
+- `main` (pushed through Phase 2; Phase 3 commit pending)

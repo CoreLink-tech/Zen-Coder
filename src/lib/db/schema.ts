@@ -45,6 +45,8 @@ export const users = sqliteTable(
     name: text("name"),
     image: text("image"),
     emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
+    // Credentials provider (hashed with bcrypt)
+    passwordHash: text("password_hash"),
     role: text("role", { enum: ["user", "admin"] })
       .notNull()
       .default("user"),
@@ -61,7 +63,82 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   conversations: many(conversations),
   workflows: many(workflows),
   creditAccount: one(creditAccounts),
+  accounts: many(accounts),
+  sessions: many(sessions),
 }));
+
+// ---------------------------------------------------------------------------
+// Auth.js tables (accounts, sessions, verification tokens)
+// ---------------------------------------------------------------------------
+
+export const accounts = sqliteTable(
+  "accounts",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (t) => [
+    uniqueIndex("accounts_provider_provider_account_id_idx").on(
+      t.provider,
+      t.providerAccountId
+    ),
+    index("accounts_user_id_idx").on(t.userId),
+  ]
+);
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const sessions = sqliteTable(
+  "sessions",
+  {
+    id: id(),
+    sessionToken: text("session_token").notNull().unique(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("sessions_user_id_idx").on(t.userId)]
+);
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const verificationTokens = sqliteTable(
+  "verification_tokens",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [
+    uniqueIndex("verification_tokens_identifier_token_idx").on(
+      t.identifier,
+      t.token
+    ),
+  ]
+);
 
 // ---------------------------------------------------------------------------
 // Projects

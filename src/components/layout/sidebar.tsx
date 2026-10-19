@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAction } from "@/lib/auth/actions";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   {
@@ -27,7 +29,10 @@ export function Sidebar() {
   return (
     <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-card">
       <div className="flex h-14 items-center border-b border-border px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+        <Link
+          href="/coding"
+          className="flex items-center gap-2 font-semibold tracking-tight"
+        >
           <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
             Z
           </span>
@@ -57,11 +62,16 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t border-border p-3">
+      <div className="space-y-2 border-t border-border p-3">
         <div className="rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
           <div className="font-medium text-foreground">Credits</div>
           <div className="mt-0.5">— (available after Phase 8)</div>
         </div>
+        <form action={logoutAction}>
+          <Button type="submit" variant="ghost" size="sm" className="w-full">
+            Sign out
+          </Button>
+        </form>
       </div>
     </aside>
   );

@@ -41,3 +41,11 @@
 **Decision**: Prepare GitHub App integration code; product owner will register the App
 
 **Rationale**: Confirmed by product owner. Least-privilege App is the preferred model over personal access tokens for multi-user production use.
+
+## ADR-008: Authentication Library
+
+**Decision**: Auth.js v5 (`next-auth@5.0.0-beta.32`) with Credentials provider and Drizzle adapter
+
+**Rationale**: Confirmed by product owner in Phase 0. Database sessions align with our Turso/Drizzle stack. Credentials provider gives us email/password without external IdP dependency for the initial release.
+
+**Note (2026)**: Auth.js v5 remains in long-term beta. Maintenance has moved to the Better Auth team. We may revisit migrating to Better Auth in a future hardening phase if stability or security concerns arise.
