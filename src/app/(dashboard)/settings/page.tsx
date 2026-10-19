@@ -1,10 +1,18 @@
 import { Header } from "@/components/layout/header";
 import { requireUser } from "@/lib/auth/session";
 import { getCreditAccountForUser } from "@/lib/db/queries";
+import { getGitHubStatus } from "@/lib/github/actions";
+import { GitHubSettings } from "@/components/github/github-settings";
+import { listConfiguredProviders, MODEL_REGISTRY } from "@/lib/ai";
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const creditAccount = await getCreditAccountForUser(user.id);
+  const [creditAccount, github] = await Promise.all([
+    getCreditAccountForUser(user.id),
+    getGitHubStatus(),
+  ]);
+
+  const configuredProviders = listConfiguredProviders();
 
   return (
     <>
@@ -61,16 +69,36 @@ export default async function SettingsPage() {
           <section className="rounded-lg border border-border bg-card p-5">
             <h2 className="text-sm font-semibold">AI Providers & Models</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              DeepSeek, Claude, and OpenAI adapters arrive in Phase 4.
+              Platform-managed keys. Configured providers:
+            </p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {configuredProviders.length === 0 ? (
+                <li className="text-muted-foreground">
+                  None configured — set API keys in environment
+                </li>
+              ) : (
+                configuredProviders.map((p) => (
+                  <li key={p.id}>
+                    <span className="font-medium">{p.displayName}</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      — {p.listModels().length} models
+                    </span>
+                  </li>
+                ))
+              )}
+            </ul>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Default model: {MODEL_REGISTRY[0]?.id ?? "—"}
             </p>
           </section>
 
-          <section className="rounded-lg border border-border bg-card p-5">
-            <h2 className="text-sm font-semibold">GitHub Integration</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Repository connection and scoped access arrive in Phase 6.
-            </p>
-          </section>
+          <GitHubSettings
+            configured={github.configured}
+            installUrl={github.installUrl}
+            installations={github.installations}
+            repositories={github.repositories}
+          />
         </div>
       </div>
     </>

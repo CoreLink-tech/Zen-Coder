@@ -2,47 +2,38 @@
 
 ## Current Phase
 
-**Phase 5 — Shared agent engine and Coding interface** (completed this session)
+**Phase 6 — GitHub integration and repository context** (completed this session)
 
 ## Completed Work
 
-### Phase 0–1
-- Next.js foundation, shared shell, Coding / Automation / Settings
+### Phase 0–5
+- App foundation, database, auth, AI providers, agent engine, Coding UI
 
-### Phase 2
-- Drizzle + Turso schema, ownership-enforced queries
-
-### Phase 3
-- Auth.js credentials auth, middleware, register/login
-
-### Phase 4
-- Multi-provider AI adapters (DeepSeek, Claude, OpenAI)
-
-### Phase 5
-- Shared agent engine (plan → tool calls → synthesize)
-- Tool registry with validation, timeout, permission hooks
-- Initial coding tools: `echo`, `current_time`, `analyze_snippet`
-- Coding conversation list + chat panel UI
-- Server actions: create conversation, send message, persist tasks
-- Agent task records with status and estimated credits
-- `/coding` and `/coding/[id]` routes
+### Phase 6
+- GitHub App client (Octokit) with installation tokens
+- github_installations table + repository linking
+- Install + callback routes
+- Settings UI: install App, import repos, disconnect
+- Read-only agent tools: list_connected_repos, get_repo_info, list_repo_files, read_repo_file
+- Ownership checks on all GitHub data access
+- Write operations intentionally disabled
+- docs/GITHUB.md
 
 ## Next Phase
 
-**Phase 6 — GitHub integration and repository context**
+**Phase 7 — Coding execution and code changes**
 
-- GitHub App installation flow
-- Repository connection and scoped access
-- File/directory inspection tools
-- Branch-aware code context
+- Controlled file modification and patch generation
+- Diff review
+- Isolated test execution (when feasible)
+- Commit / push / PR with explicit user approval
 
 ## Known Limitations
 
-- No streaming UI yet (shows "Thinking…" while waiting)
-- Tools are demo-grade; real repo tools come in Phase 6–7
-- Credit deductions not written to ledger yet (Phase 8)
-- Requires at least one AI provider API key for real replies
-- `npm install` must be run locally for SDKs
+- GitHub App must be registered by the product owner (env vars required)
+- No write access yet
+- No webhook handling yet
+- Large files are rejected (>200KB) for context safety
 
 ## Branch
 

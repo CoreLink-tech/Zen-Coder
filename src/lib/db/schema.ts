@@ -173,6 +173,41 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
 }));
 
 // ---------------------------------------------------------------------------
+// GitHub App installations
+// ---------------------------------------------------------------------------
+
+export const githubInstallations = sqliteTable(
+  "github_installations",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    installationId: text("installation_id").notNull(),
+    accountLogin: text("account_login"),
+    accountType: text("account_type"), // User | Organization
+    permissions: text("permissions"), // JSON snapshot
+    suspended: integer("suspended", { mode: "boolean" }).default(false),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("github_installations_installation_id_idx").on(t.installationId),
+    index("github_installations_user_id_idx").on(t.userId),
+  ]
+);
+
+export const githubInstallationsRelations = relations(
+  githubInstallations,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [githubInstallations.userId],
+      references: [users.id],
+    }),
+    repositories: many(repositories),
+  })
+);
+
+// ---------------------------------------------------------------------------
 // Repositories (GitHub connection metadata)
 // ---------------------------------------------------------------------------
 
@@ -180,9 +215,9 @@ export const repositories = sqliteTable(
   "repositories",
   {
     id: id(),
-    projectId: text("project_id")
-      .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
+    projectId: text("project_id").references(() => projects.id, {
+      onDelete: "set null",
+    }),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -587,6 +622,7 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;
+export type GitHubInstallation = typeof githubInstallations.$inferSelect;
 export type Repository = typeof repositories.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
