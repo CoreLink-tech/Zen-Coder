@@ -1,63 +1,60 @@
 # GitHub Integration — Zen-Coder
 
-## Status (Phase 6)
+## Status
 
-Read-only GitHub App integration is implemented. Write operations (edit, commit, push, PR) are deferred to Phase 7.
+- **Phase 6**: Read-only access (list/read files)
+- **Phase 7**: Controlled writes via **proposed changes** + explicit user approval
+
+The agent never writes directly to GitHub. It calls `propose_file_changes`, which stores a pending proposal. The user reviews the diff and chooses **Commit**, **Commit + open PR**, or **Reject**.
 
 ## Setup (product owner)
 
 1. Create a **GitHub App** at https://github.com/settings/apps/new
 2. Permissions (Repository):
-   - **Contents**: Read-only
+   - **Contents**: Read and write
    - **Metadata**: Read-only
+   - **Pull requests**: Read and write (for PR creation)
 3. Callback URL: `https://<your-domain>/api/github/callback`
 4. Setup URL (optional): same as callback
-5. Webhook: optional for Phase 6; secret can be set for later
-6. Generate a private key and download it
-7. Note the App ID, Client ID, Client Secret, and URL slug
-
-Environment variables:
+5. Generate a private key
+6. Note App ID, Client ID, Client Secret, URL slug
 
 ```env
 GITHUB_APP_ID=
-GITHUB_APP_PRIVATE_KEY=   # PEM content; use \n for newlines in env
+GITHUB_APP_PRIVATE_KEY=
 GITHUB_APP_CLIENT_ID=
 GITHUB_APP_CLIENT_SECRET=
-GITHUB_APP_WEBHOOK_SECRET=  # optional for now
-GITHUB_APP_SLUG=            # from github.com/apps/<slug>
+GITHUB_APP_WEBHOOK_SECRET=  # optional
+GITHUB_APP_SLUG=
 ```
 
 ## User flow
 
-1. User opens **Settings → GitHub Integration**
-2. Clicks **Install GitHub App** → redirected to GitHub
-3. Installs the App on their account or org (select repos)
-4. GitHub redirects to `/api/github/callback?installation_id=...`
-5. Installation is linked to the Zen-Coder user
-6. User clicks **Import repos** to sync accessible repositories
-7. Coding agent can use read-only tools against connected repos
+1. Settings → Install GitHub App → select repos
+2. Import repos
+3. In Coding chat, ask the agent to change a file
+4. Agent calls `propose_file_changes` → pending proposal appears
+5. User reviews content and clicks **Commit** or **Commit + open PR**
 
-## Agent tools (read-only)
+## Agent tools
 
-| Tool | Description |
-|------|-------------|
-| `list_connected_repos` | Repos linked to the user |
-| `get_repo_info` | Default branch, language, visibility |
-| `list_repo_files` | Directory listing at a path |
-| `read_repo_file` | File contents (max ~200KB) |
-
-All tools enforce ownership: the installation and repository must belong to the requesting user.
+| Tool | Access | Description |
+|------|--------|-------------|
+| `list_connected_repos` | Read | Linked repos |
+| `get_repo_info` | Read | Metadata |
+| `list_repo_files` | Read | Directory listing |
+| `read_repo_file` | Read | File contents (≤200KB) |
+| `propose_file_changes` | Write (gated) | Creates pending proposal only |
 
 ## Security
 
-- Installation tokens are obtained server-side via the GitHub App private key
-- No user personal access tokens are stored
-- Cross-user isolation: queries filter by `user_id`
-- Write scopes are not requested in Phase 6
+- Installation tokens only; no user PATs stored
+- All queries scoped by `user_id`
+- Writes require an existing pending proposal owned by the user
+- Multi-file changes are applied as sequential Contents API commits (auditable per file)
 
-## Phase 7 (next)
+## Limitations
 
-- Controlled file modification / patch generation
-- Diff review UI
-- Commit and push with explicit user approval
-- Pull request creation
+- Isolated test runners are not implemented yet (no sandbox workers)
+- True single multi-file git commit (Git Data API tree) can be added later
+- Webhooks not handled yet

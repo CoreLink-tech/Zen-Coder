@@ -7,6 +7,7 @@ import type { ToolDefinition, ToolContext, ToolResult } from "./types";
 import { toolToJsonSchema } from "./types";
 import { CODING_TOOLS } from "./coding";
 import { GITHUB_TOOLS } from "./github";
+import { GITHUB_WRITE_TOOLS } from "./github-write";
 
 const registry = new Map<string, ToolDefinition>();
 
@@ -22,6 +23,7 @@ function register(tools: ToolDefinition[]) {
 // Register built-in tools
 register(CODING_TOOLS);
 register(GITHUB_TOOLS);
+register(GITHUB_WRITE_TOOLS);
 
 export function getTool(id: string): ToolDefinition | undefined {
   return registry.get(id);

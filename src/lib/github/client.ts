@@ -197,3 +197,178 @@ export async function getRepoInfo(
     language: data.language,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Write operations (Phase 7) — require user approval before calling
+// ---------------------------------------------------------------------------
+
+export interface FileChange {
+  path: string;
+  action: "create" | "update" | "delete";
+  content?: string;
+  /** Required for update/delete when using Contents API */
+  sha?: string;
+}
+
+/**
+ * Create or update a single file via the Contents API.
+ * Prefer applyFileChanges for multi-file commits.
+ */
+export async function createOrUpdateFile(
+  installationId: string | number,
+  owner: string,
+  repo: string,
+  path: string,
+  content: string,
+  message: string,
+  branch: string,
+  sha?: string
+) {
+  const octokit = await getInstallationOctokit(installationId);
+  const { data } = await octokit.rest.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path,
+    message,
+    content: Buffer.from(content, "utf-8").toString("base64"),
+    branch,
+    ...(sha ? { sha } : {}),
+  });
+  return {
+    commitSha: data.commit.sha ?? null,
+    contentSha: data.content?.sha ?? null,
+    htmlUrl: data.content?.html_url ?? null,
+  };
+}
+
+/**
+ * Apply multiple file changes as individual commits on a branch.
+ * For a true multi-file single commit, the Git Data API would be used;
+ * this phased approach is simpler and auditable per file.
+ */
+export async function applyFileChanges(
+  installationId: string | number,
+  owner: string,
+  repo: string,
+  branch: string,
+  message: string,
+  changes: FileChange[]
+): Promise<{ results: Array<{ path: string; ok: boolean; error?: string; commitSha?: string | null }> }> {
+  const octokit = await getInstallationOctokit(installationId);
+  const results: Array<{
+    path: string;
+    ok: boolean;
+    error?: string;
+    commitSha?: string | null;
+  }> = [];
+
+  for (const change of changes) {
+    try {
+      if (change.action === "delete") {
+        if (!change.sha) {
+          results.push({ path: change.path, ok: false, error: "sha required for delete" });
+          continue;
+        }
+        const { data } = await octokit.rest.repos.deleteFile({
+          owner,
+          repo,
+          path: change.path,
+          message: `${message} (delete ${change.path})`,
+          sha: change.sha,
+          branch,
+        });
+        results.push({
+          path: change.path,
+          ok: true,
+          commitSha: data.commit.sha ?? null,
+        });
+      } else {
+        const { data } = await octokit.rest.repos.createOrUpdateFileContents({
+          owner,
+          repo,
+          path: change.path,
+          message:
+            changes.length === 1
+              ? message
+              : `${message} (${change.action} ${change.path})`,
+          content: Buffer.from(change.content ?? "", "utf-8").toString("base64"),
+          branch,
+          ...(change.sha ? { sha: change.sha } : {}),
+        });
+        results.push({
+          path: change.path,
+          ok: true,
+          commitSha: data.commit.sha ?? null,
+        });
+      }
+    } catch (err) {
+      results.push({
+        path: change.path,
+        ok: false,
+        error: err instanceof Error ? err.message : "Write failed",
+      });
+    }
+  }
+
+  return { results };
+}
+
+/** Create a pull request */
+export async function createPullRequest(
+  installationId: string | number,
+  owner: string,
+  repo: string,
+  title: string,
+  head: string,
+  base: string,
+  body?: string
+) {
+  const octokit = await getInstallationOctokit(installationId);
+  const { data } = await octokit.rest.pulls.create({
+    owner,
+    repo,
+    title,
+    head,
+    base,
+    body: body ?? "",
+  });
+  return {
+    number: data.number,
+    htmlUrl: data.html_url,
+    state: data.state,
+  };
+}
+
+/** Create a new branch from a base ref */
+export async function createBranch(
+  installationId: string | number,
+  owner: string,
+  repo: string,
+  newBranch: string,
+  fromSha: string
+) {
+  const octokit = await getInstallationOctokit(installationId);
+  await octokit.rest.git.createRef({
+    owner,
+    repo,
+    ref: `refs/heads/${newBranch}`,
+    sha: fromSha,
+  });
+  return { ref: `refs/heads/${newBranch}`, sha: fromSha };
+}
+
+/** Get the latest commit SHA for a branch */
+export async function getBranchSha(
+  installationId: string | number,
+  owner: string,
+  repo: string,
+  branch: string
+) {
+  const octokit = await getInstallationOctokit(installationId);
+  const { data } = await octokit.rest.repos.getBranch({
+    owner,
+    repo,
+    branch,
+  });
+  return data.commit.sha;
+}

@@ -385,6 +385,69 @@ export const agentTasksRelations = relations(agentTasks, ({ one }) => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Proposed code changes (awaiting user approval before write)
+// ---------------------------------------------------------------------------
+
+export const proposedChanges = sqliteTable(
+  "proposed_changes",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    conversationId: text("conversation_id").references(() => conversations.id, {
+      onDelete: "set null",
+    }),
+    taskId: text("task_id").references(() => agentTasks.id, {
+      onDelete: "set null",
+    }),
+    repositoryId: text("repository_id").references(() => repositories.id, {
+      onDelete: "cascade",
+    }),
+    fullName: text("full_name").notNull(), // owner/repo
+    branch: text("branch").notNull(),
+    baseSha: text("base_sha"),
+    // JSON array of { path, action: create|update|delete, content?, previousContent?, message? }
+    files: text("files").notNull(),
+    commitMessage: text("commit_message"),
+    status: text("status", {
+      enum: ["pending", "approved", "rejected", "applied", "failed"],
+    })
+      .notNull()
+      .default("pending"),
+    result: text("result"), // JSON: commit sha, pr url, error, etc.
+    ...timestamps,
+  },
+  (t) => [
+    index("proposed_changes_user_id_idx").on(t.userId),
+    index("proposed_changes_status_idx").on(t.status),
+    index("proposed_changes_conversation_id_idx").on(t.conversationId),
+  ]
+);
+
+export const proposedChangesRelations = relations(
+  proposedChanges,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [proposedChanges.userId],
+      references: [users.id],
+    }),
+    conversation: one(conversations, {
+      fields: [proposedChanges.conversationId],
+      references: [conversations.id],
+    }),
+    task: one(agentTasks, {
+      fields: [proposedChanges.taskId],
+      references: [agentTasks.id],
+    }),
+    repository: one(repositories, {
+      fields: [proposedChanges.repositoryId],
+      references: [repositories.id],
+    }),
+  })
+);
+
+// ---------------------------------------------------------------------------
 // Workflows (Automation)
 // ---------------------------------------------------------------------------
 
@@ -627,6 +690,7 @@ export type Repository = typeof repositories.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type AgentTask = typeof agentTasks.$inferSelect;
+export type ProposedChange = typeof proposedChanges.$inferSelect;
 export type Workflow = typeof workflows.$inferSelect;
 export type WorkflowVersion = typeof workflowVersions.$inferSelect;
 export type WorkflowExecution = typeof workflowExecutions.$inferSelect;

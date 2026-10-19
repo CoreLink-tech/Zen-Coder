@@ -2,10 +2,12 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { ConversationList } from "@/components/coding/conversation-list";
 import { ChatPanel } from "@/components/coding/chat-panel";
+import { PendingChanges } from "@/components/coding/changes/pending-changes";
 import {
   getCodingConversation,
   listCodingConversations,
 } from "@/lib/agent/coding-actions";
+import { listPendingChanges } from "@/lib/github/changes";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -13,9 +15,10 @@ interface PageProps {
 
 export default async function CodingConversationPage({ params }: PageProps) {
   const { id } = await params;
-  const [conversation, conversations] = await Promise.all([
+  const [conversation, conversations, proposals] = await Promise.all([
     getCodingConversation(id),
     listCodingConversations(),
+    listPendingChanges(id),
   ]);
 
   if (!conversation) {
@@ -37,7 +40,20 @@ export default async function CodingConversationPage({ params }: PageProps) {
       />
       <div className="flex flex-1 overflow-hidden">
         <ConversationList conversations={conversations} activeId={id} />
-        <ChatPanel conversationId={id} initialMessages={messages} />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <PendingChanges
+            proposals={proposals.map((p) => ({
+              id: p.id,
+              fullName: p.fullName,
+              branch: p.branch,
+              commitMessage: p.commitMessage,
+              files: p.files,
+              status: p.status,
+              createdAt: p.createdAt,
+            }))}
+          />
+          <ChatPanel conversationId={id} initialMessages={messages} />
+        </div>
       </div>
     </>
   );
