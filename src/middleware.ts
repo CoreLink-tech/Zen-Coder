@@ -1,8 +1,6 @@
 /**
- * Auth.js middleware — protects dashboard routes.
- *
- * Unauthenticated requests to /coding, /automation, /settings
- * are redirected to /login.
+ * Auth.js middleware — protects dashboard routes including /admin.
+ * Admin role is enforced in page loaders (requireAdmin).
  */
 
 import { auth } from "@/lib/auth";
@@ -17,7 +15,8 @@ export default auth((req) => {
   const isDashboard =
     pathname.startsWith("/coding") ||
     pathname.startsWith("/automation") ||
-    pathname.startsWith("/settings");
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/admin");
 
   if (isDashboard && !isLoggedIn) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
@@ -37,6 +36,7 @@ export const config = {
     "/coding/:path*",
     "/automation/:path*",
     "/settings/:path*",
+    "/admin/:path*",
     "/login",
     "/register",
   ],

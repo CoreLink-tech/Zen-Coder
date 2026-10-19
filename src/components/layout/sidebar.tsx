@@ -21,6 +21,11 @@ const navItems = [
     href: "/settings",
     description: "Account, models & billing",
   },
+  {
+    label: "Admin",
+    href: "/admin",
+    description: "Ops & investigation",
+  },
 ];
 
 export function Sidebar() {

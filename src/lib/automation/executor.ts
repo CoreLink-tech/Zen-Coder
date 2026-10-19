@@ -8,6 +8,7 @@ import { executeTool, getTool } from "@/lib/tools/registry";
 import type { ToolContext } from "@/lib/tools/types";
 import type { WorkflowDefinition } from "./types";
 import { validateWorkflowDefinition } from "./types";
+import { logger } from "@/lib/observability/logger";
 
 export interface StepLog {
   stepId: string;
@@ -120,5 +121,12 @@ export async function executeWorkflowDefinition(
     });
   }
 
+  logger.info("workflow_execution_completed", {
+    userId: ctx.userId,
+    workspace: "automation",
+    durationMs: logs.reduce((a, s) => a + (s.finishedAt - s.startedAt), 0),
+    steps: logs.length,
+  });
   return { status: "succeeded", steps: logs };
 }
+

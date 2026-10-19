@@ -2,32 +2,32 @@
 
 ## Current Phase
 
-**Phase 13 — Subscriptions and payments** (completed this session)
+**Phase 14 — Administration and observability** (completed this session)
 
 ## Completed Work
 
-### Phase 0–12
-- Through automation integrations
+### Phase 0–13
+- Through Stripe billing
 
-### Phase 13
-- Plan/pack definitions and Stripe price mapping
-- subscriptions table
-- Checkout session API (authenticated)
-- Webhook with signature verification + idempotent credit grants
-- Settings plans UI
-- docs/BILLING.md
+### Phase 14
+- Admin guard (role = admin)
+- Admin overview, users, usage, failures pages
+- /api/health
+- Structured JSON logger
+- Middleware protection for /admin
+- docs/OPERATIONS.md
 
 ## Next Phase
 
-**Phase 14 — Administration and observability**
+**Phase 15 — Security and reliability hardening**
 
-- Admin views for users, usage, failures
-- Structured logging / health endpoints
-- Support investigation tools
+- Abuse limits, rate limiting
+- Secret handling review
+- Failure mode documentation
 
 ## Remaining
 
-Phases **14–16** (3 phases) + optional Future cybersecurity.
+Phases **15–16** (2 phases) + optional Future cybersecurity.
 
 ## Branch
 
