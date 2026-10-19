@@ -1,0 +1,521 @@
+/**
+ * Zen-Coder database schema (Drizzle + Turso/libSQL)
+ *
+ * Phase 2 focuses on core ownership, projects, conversations,
+ * tasks, and workflow skeletons. Billing tables are included
+ * as stubs so Phase 8 can extend them without migration churn.
+ */
+
+import { relations, sql } from "drizzle-orm";
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const id = () =>
+  text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID());
+
+const timestamps = {
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+};
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+
+export const users = sqliteTable(
+  "users",
+  {
+    id: id(),
+    email: text("email").notNull(),
+    name: text("name"),
+    image: text("image"),
+    emailVerified: integer("email_verified", { mode: "timestamp_ms" }),
+    role: text("role", { enum: ["user", "admin"] })
+      .notNull()
+      .default("user"),
+    status: text("status", { enum: ["active", "suspended", "deleted"] })
+      .notNull()
+      .default("active"),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("users_email_idx").on(t.email)]
+);
+
+export const usersRelations = relations(users, ({ many, one }) => ({
+  projects: many(projects),
+  conversations: many(conversations),
+  workflows: many(workflows),
+  creditAccount: one(creditAccounts),
+}));
+
+// ---------------------------------------------------------------------------
+// Projects
+// ---------------------------------------------------------------------------
+
+export const projects = sqliteTable(
+  "projects",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    workspace: text("workspace", { enum: ["coding", "automation", "shared"] })
+      .notNull()
+      .default("coding"),
+    ...timestamps,
+  },
+  (t) => [
+    index("projects_user_id_idx").on(t.userId),
+  ]
+);
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  user: one(users, {
+    fields: [projects.userId],
+    references: [users.id],
+  }),
+  repositories: many(repositories),
+  conversations: many(conversations),
+}));
+
+// ---------------------------------------------------------------------------
+// Repositories (GitHub connection metadata)
+// ---------------------------------------------------------------------------
+
+export const repositories = sqliteTable(
+  "repositories",
+  {
+    id: id(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    githubRepoId: integer("github_repo_id"),
+    fullName: text("full_name").notNull(), // owner/repo
+    defaultBranch: text("default_branch").default("main"),
+    installationId: text("installation_id"),
+    private: integer("private", { mode: "boolean" }).default(true),
+    ...timestamps,
+  },
+  (t) => [
+    index("repositories_user_id_idx").on(t.userId),
+    index("repositories_project_id_idx").on(t.projectId),
+    uniqueIndex("repositories_user_full_name_idx").on(t.userId, t.fullName),
+  ]
+);
+
+export const repositoriesRelations = relations(repositories, ({ one }) => ({
+  project: one(projects, {
+    fields: [repositories.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [repositories.userId],
+    references: [users.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// Conversations & Messages
+// ---------------------------------------------------------------------------
+
+export const conversations = sqliteTable(
+  "conversations",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    projectId: text("project_id").references(() => projects.id, {
+      onDelete: "set null",
+    }),
+    workspace: text("workspace", { enum: ["coding", "automation"] })
+      .notNull()
+      .default("coding"),
+    title: text("title"),
+    status: text("status", {
+      enum: ["active", "archived", "deleted"],
+    })
+      .notNull()
+      .default("active"),
+    ...timestamps,
+  },
+  (t) => [
+    index("conversations_user_id_idx").on(t.userId),
+    index("conversations_project_id_idx").on(t.projectId),
+  ]
+);
+
+export const conversationsRelations = relations(
+  conversations,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [conversations.userId],
+      references: [users.id],
+    }),
+    project: one(projects, {
+      fields: [conversations.projectId],
+      references: [projects.id],
+    }),
+    messages: many(messages),
+    tasks: many(agentTasks),
+  })
+);
+
+export const messages = sqliteTable(
+  "messages",
+  {
+    id: id(),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => conversations.id, { onDelete: "cascade" }),
+    role: text("role", {
+      enum: ["user", "assistant", "system", "tool"],
+    }).notNull(),
+    content: text("content").notNull(),
+    // Structured tool call / result payloads (JSON string)
+    metadata: text("metadata"),
+    ...timestamps,
+  },
+  (t) => [index("messages_conversation_id_idx").on(t.conversationId)]
+);
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// Agent Tasks
+// ---------------------------------------------------------------------------
+
+export const agentTasks = sqliteTable(
+  "agent_tasks",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    conversationId: text("conversation_id").references(
+      () => conversations.id,
+      { onDelete: "set null" }
+    ),
+    projectId: text("project_id").references(() => projects.id, {
+      onDelete: "set null",
+    }),
+    workspace: text("workspace", { enum: ["coding", "automation"] })
+      .notNull()
+      .default("coding"),
+    title: text("title").notNull(),
+    status: text("status", {
+      enum: [
+        "pending",
+        "planning",
+        "running",
+        "awaiting_approval",
+        "completed",
+        "failed",
+        "cancelled",
+      ],
+    })
+      .notNull()
+      .default("pending"),
+    // High-level plan / summary (JSON or markdown)
+    plan: text("plan"),
+    result: text("result"),
+    error: text("error"),
+    // Estimated vs actual credit usage (filled later)
+    estimatedCredits: integer("estimated_credits"),
+    actualCredits: integer("actual_credits"),
+    ...timestamps,
+  },
+  (t) => [
+    index("agent_tasks_user_id_idx").on(t.userId),
+    index("agent_tasks_conversation_id_idx").on(t.conversationId),
+    index("agent_tasks_status_idx").on(t.status),
+  ]
+);
+
+export const agentTasksRelations = relations(agentTasks, ({ one }) => ({
+  user: one(users, {
+    fields: [agentTasks.userId],
+    references: [users.id],
+  }),
+  conversation: one(conversations, {
+    fields: [agentTasks.conversationId],
+    references: [conversations.id],
+  }),
+  project: one(projects, {
+    fields: [agentTasks.projectId],
+    references: [projects.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// Workflows (Automation)
+// ---------------------------------------------------------------------------
+
+export const workflows = sqliteTable(
+  "workflows",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    projectId: text("project_id").references(() => projects.id, {
+      onDelete: "set null",
+    }),
+    name: text("name").notNull(),
+    description: text("description"),
+    status: text("status", {
+      enum: ["draft", "active", "paused", "disabled", "archived"],
+    })
+      .notNull()
+      .default("draft"),
+    // Current published version id (nullable until first publish)
+    currentVersionId: text("current_version_id"),
+    ...timestamps,
+  },
+  (t) => [
+    index("workflows_user_id_idx").on(t.userId),
+    index("workflows_status_idx").on(t.status),
+  ]
+);
+
+export const workflowsRelations = relations(workflows, ({ one, many }) => ({
+  user: one(users, {
+    fields: [workflows.userId],
+    references: [users.id],
+  }),
+  project: one(projects, {
+    fields: [workflows.projectId],
+    references: [projects.id],
+  }),
+  versions: many(workflowVersions),
+  executions: many(workflowExecutions),
+}));
+
+export const workflowVersions = sqliteTable(
+  "workflow_versions",
+  {
+    id: id(),
+    workflowId: text("workflow_id")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    // Structured definition: steps, tools, conditions (JSON)
+    definition: text("definition").notNull(),
+    // Human-readable summary produced by the agent
+    summary: text("summary"),
+    createdBy: text("created_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    ...timestamps,
+  },
+  (t) => [
+    index("workflow_versions_workflow_id_idx").on(t.workflowId),
+    uniqueIndex("workflow_versions_workflow_version_idx").on(
+      t.workflowId,
+      t.version
+    ),
+  ]
+);
+
+export const workflowVersionsRelations = relations(
+  workflowVersions,
+  ({ one }) => ({
+    workflow: one(workflows, {
+      fields: [workflowVersions.workflowId],
+      references: [workflows.id],
+    }),
+  })
+);
+
+export const workflowExecutions = sqliteTable(
+  "workflow_executions",
+  {
+    id: id(),
+    workflowId: text("workflow_id")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    workflowVersionId: text("workflow_version_id")
+      .notNull()
+      .references(() => workflowVersions.id, { onDelete: "restrict" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: text("status", {
+      enum: [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "timed_out",
+      ],
+    })
+      .notNull()
+      .default("queued"),
+    trigger: text("trigger", {
+      enum: ["manual", "schedule", "webhook", "event"],
+    })
+      .notNull()
+      .default("manual"),
+    startedAt: integer("started_at", { mode: "timestamp_ms" }),
+    finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+    error: text("error"),
+    // Step-level logs stored as JSON for now (can move to object storage later)
+    logs: text("logs"),
+    creditsUsed: integer("credits_used"),
+    ...timestamps,
+  },
+  (t) => [
+    index("workflow_executions_workflow_id_idx").on(t.workflowId),
+    index("workflow_executions_user_id_idx").on(t.userId),
+    index("workflow_executions_status_idx").on(t.status),
+  ]
+);
+
+export const workflowExecutionsRelations = relations(
+  workflowExecutions,
+  ({ one }) => ({
+    workflow: one(workflows, {
+      fields: [workflowExecutions.workflowId],
+      references: [workflows.id],
+    }),
+    version: one(workflowVersions, {
+      fields: [workflowExecutions.workflowVersionId],
+      references: [workflowVersions.id],
+    }),
+    user: one(users, {
+      fields: [workflowExecutions.userId],
+      references: [users.id],
+    }),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Credit accounting (stubs for Phase 8)
+// ---------------------------------------------------------------------------
+
+export const creditAccounts = sqliteTable(
+  "credit_accounts",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Balance in internal credit units (integer for safety)
+    balance: integer("balance").notNull().default(0),
+    // Reserved / held for in-flight operations
+    reserved: integer("reserved").notNull().default(0),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("credit_accounts_user_id_idx").on(t.userId)]
+);
+
+export const creditAccountsRelations = relations(
+  creditAccounts,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [creditAccounts.userId],
+      references: [users.id],
+    }),
+    ledgerEntries: many(creditLedgerEntries),
+  })
+);
+
+export const creditLedgerEntries = sqliteTable(
+  "credit_ledger_entries",
+  {
+    id: id(),
+    accountId: text("account_id")
+      .notNull()
+      .references(() => creditAccounts.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    // Positive = credit, negative = debit
+    amount: integer("amount").notNull(),
+    type: text("type", {
+      enum: [
+        "grant",
+        "purchase",
+        "usage",
+        "refund",
+        "adjustment",
+        "reservation",
+        "release",
+        "reconciliation",
+      ],
+    }).notNull(),
+    // Idempotency key for the operation that produced this entry
+    operationId: text("operation_id").notNull(),
+    reason: text("reason"),
+    // Optional links
+    taskId: text("task_id"),
+    workflowExecutionId: text("workflow_execution_id"),
+    provider: text("provider"),
+    model: text("model"),
+    metadata: text("metadata"), // JSON
+    ...timestamps,
+  },
+  (t) => [
+    index("credit_ledger_account_id_idx").on(t.accountId),
+    index("credit_ledger_user_id_idx").on(t.userId),
+    uniqueIndex("credit_ledger_operation_id_idx").on(t.operationId),
+  ]
+);
+
+export const creditLedgerEntriesRelations = relations(
+  creditLedgerEntries,
+  ({ one }) => ({
+    account: one(creditAccounts, {
+      fields: [creditLedgerEntries.accountId],
+      references: [creditAccounts.id],
+    }),
+    user: one(users, {
+      fields: [creditLedgerEntries.userId],
+      references: [users.id],
+    }),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Type exports
+// ---------------------------------------------------------------------------
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
+export type Repository = typeof repositories.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;
+export type Message = typeof messages.$inferSelect;
+export type AgentTask = typeof agentTasks.$inferSelect;
+export type Workflow = typeof workflows.$inferSelect;
+export type WorkflowVersion = typeof workflowVersions.$inferSelect;
+export type WorkflowExecution = typeof workflowExecutions.$inferSelect;
+export type CreditAccount = typeof creditAccounts.$inferSelect;
+export type CreditLedgerEntry = typeof creditLedgerEntries.$inferSelect;
