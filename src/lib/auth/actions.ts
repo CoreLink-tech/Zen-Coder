@@ -52,13 +52,16 @@ export async function registerAction(
   const passwordHash = await hash(parsed.data.password, 12);
 
   try {
-    await createUser({
+    const user = await createUser({
       email,
       name: parsed.data.name?.trim() || null,
       passwordHash,
       role: "user",
       status: "active",
     });
+    // Welcome credits (idempotent)
+    const { ensureWelcomeGrant } = await import("@/lib/credits/ledger");
+    await ensureWelcomeGrant(user.id);
   } catch {
     return { error: "Could not create account. Please try again." };
   }

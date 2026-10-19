@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/layout/sidebar";
+import { SidebarShell } from "@/components/layout/sidebar-shell";
 import { requireUser } from "@/lib/auth/session";
 
 export default async function DashboardLayout({
@@ -6,12 +6,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Server-side auth gate — unauthenticated users are redirected to /login
   await requireUser();
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+      <SidebarShell />
       <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
     </div>
   );

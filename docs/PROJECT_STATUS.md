@@ -2,35 +2,47 @@
 
 ## Current Phase
 
-**Phase 7 — Coding execution and code changes** (completed this session)
+**Phase 8 — Unified credit ledger** (completed this session)
 
 ## Completed Work
 
-### Phase 0–6
-- Foundation, DB, auth, AI providers, agent engine, Coding UI, GitHub read-only
+### Phase 0–7
+- Foundation through approval-gated GitHub code changes
 
-### Phase 7
-- proposed_changes table for approval-gated writes
-- propose_file_changes tool (agent proposes; never writes directly)
-- Apply / reject / open-PR server actions
-- GitHub write helpers: create/update/delete file, branch, PR
-- Pending changes review UI in Coding conversations
-- docs/GITHUB.md updated for write permissions
+### Phase 8
+- Ledger service: grant, purchase, usage, refund, reserve, release
+- Idempotency via unique operationId
+- Insufficient-credits protection (no negative balance)
+- Welcome grant on registration (5,000 credits)
+- Coding agent usage charged to shared balance
+- Live credit balance in sidebar
+- Settings: available/balance/reserved + recent ledger
+- docs/CREDITS_AND_BILLING.md
 
 ## Next Phase
 
-**Phase 8 — Unified credit ledger**
+**Phase 9 — Automation foundation**
 
-- Shared credit account mutations with concurrency protection
-- Record AI usage against the ledger
-- Reservations and reconciliation
+- Workflow schema (already partially in DB)
+- Workflow create UI + validation
+- Tool registry permission model for automation
+- Controlled execution state + history
 
-## Known Limitations
+## Remaining phases
 
-- No isolated test execution workers yet
-- Multi-file changes = sequential Contents API commits (not one git tree commit)
-- GitHub App needs Contents: write + Pull requests: write
-- Live apply requires configured App + imported repos
+| Phase | Focus |
+|-------|--------|
+| 9 | Automation foundation |
+| 10 | Website / API / browser automation |
+| 11 | Background jobs & scheduling |
+| 12 | Additional automation integrations |
+| 13 | Subscriptions & payments |
+| 14 | Administration & observability |
+| 15 | Security & reliability hardening |
+| 16 | Deployment readiness |
+| Future | Cybersecurity workspace |
+
+**8 phases left** after this one (9–16), plus optional Future.
 
 ## Branch
 

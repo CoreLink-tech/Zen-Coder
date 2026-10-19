@@ -27,7 +27,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-card">
+    <>
       <div className="flex h-14 items-center border-b border-border px-4">
         <Link
           href="/coding"
@@ -62,17 +62,13 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="space-y-2 border-t border-border p-3">
-        <div className="rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
-          <div className="font-medium text-foreground">Credits</div>
-          <div className="mt-0.5">— (available after Phase 8)</div>
-        </div>
+      <div className="border-t border-border p-3">
         <form action={logoutAction}>
           <Button type="submit" variant="ghost" size="sm" className="w-full">
             Sign out
           </Button>
         </form>
       </div>
-    </aside>
+    </>
   );
 }

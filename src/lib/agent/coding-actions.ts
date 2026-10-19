@@ -127,6 +127,43 @@ export async function sendCodingMessage(
     });
   }
 
+  // Charge shared credit balance for actual usage (idempotent per task)
+  let chargedCredits: number | null = result.estimatedCredits;
+  if (result.estimatedCredits && result.estimatedCredits > 0) {
+    try {
+      const { deductUsage, InsufficientCreditsError } = await import(
+        "@/lib/credits/ledger"
+      );
+      await deductUsage({
+        userId: user.id,
+        amount: result.estimatedCredits,
+        operationId: `usage:task:${task.id}`,
+        reason: "Coding agent usage",
+        taskId: task.id,
+        provider: result.provider,
+        model: result.model,
+        metadata: { usage: result.usage, workspace: "coding" },
+      });
+    } catch (err) {
+      // Soft-fail charging so the user still sees the reply; surface in error if insufficient
+      if (
+        err &&
+        typeof err === "object" &&
+        "name" in err &&
+        err.name === "InsufficientCreditsError"
+      ) {
+        chargedCredits = null;
+        result.error = [
+          result.error,
+          "Insufficient credits for this usage (reply delivered; balance not charged).",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      }
+      // IdempotentReplay is fine — already charged
+    }
+  }
+
   // Update task
   await db
     .update(agentTasks)
@@ -134,7 +171,7 @@ export async function sendCodingMessage(
       status: result.status === "completed" ? "completed" : "failed",
       result: result.finalContent,
       error: result.error,
-      actualCredits: result.estimatedCredits ?? undefined,
+      actualCredits: chargedCredits ?? undefined,
       updatedAt: new Date(),
     })
     .where(eq(agentTasks.id, task.id));
@@ -158,7 +195,7 @@ export async function sendCodingMessage(
       toolId: s.toolId,
     })),
     usage: result.usage,
-    estimatedCredits: result.estimatedCredits,
+    estimatedCredits: chargedCredits,
     error: result.error,
   };
 }

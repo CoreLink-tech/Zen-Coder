@@ -1,14 +1,19 @@
 import { Header } from "@/components/layout/header";
 import { requireUser } from "@/lib/auth/session";
-import { getCreditAccountForUser } from "@/lib/db/queries";
 import { getGitHubStatus } from "@/lib/github/actions";
 import { GitHubSettings } from "@/components/github/github-settings";
 import { listConfiguredProviders, MODEL_REGISTRY } from "@/lib/ai";
+import {
+  getAccountSummary,
+  listLedgerEntries,
+  CREDIT_CONFIG,
+} from "@/lib/credits";
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const [creditAccount, github] = await Promise.all([
-    getCreditAccountForUser(user.id),
+  const [summary, entries, github] = await Promise.all([
+    getAccountSummary(user.id),
+    listLedgerEntries(user.id, 15),
     getGitHubStatus(),
   ]);
 
@@ -47,23 +52,56 @@ export default async function SettingsPage() {
           <section className="rounded-lg border border-border bg-card p-5">
             <h2 className="text-sm font-semibold">Credits</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Shared balance for Coding and Automation.
+              One shared balance for Coding and Automation. Rate:{" "}
+              {CREDIT_CONFIG.creditsPerUsd.toLocaleString()} credits = $1.00
+              provider cost ({CREDIT_CONFIG.version}).
             </p>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Available</dt>
                 <dd className="font-medium">
-                  {creditAccount?.balance ?? 0} credits
+                  {summary.available.toLocaleString()} credits
                 </dd>
               </div>
               <div className="flex justify-between">
+                <dt className="text-muted-foreground">Balance</dt>
+                <dd>{summary.balance.toLocaleString()}</dd>
+              </div>
+              <div className="flex justify-between">
                 <dt className="text-muted-foreground">Reserved</dt>
-                <dd>{creditAccount?.reserved ?? 0} credits</dd>
+                <dd>{summary.reserved.toLocaleString()}</dd>
               </div>
             </dl>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Full ledger and purchases arrive in Phase 8 / 13.
-            </p>
+
+            {entries.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Recent activity
+                </h3>
+                <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-xs">
+                  {entries.map((e) => (
+                    <li
+                      key={e.id}
+                      className="flex justify-between gap-2 border-b border-border/50 py-1.5"
+                    >
+                      <span className="truncate text-muted-foreground">
+                        {e.type}
+                        {e.reason ? ` · ${e.reason}` : ""}
+                        {e.model ? ` · ${e.model}` : ""}
+                      </span>
+                      <span
+                        className={
+                          e.amount >= 0 ? "text-success" : "text-destructive"
+                        }
+                      >
+                        {e.amount >= 0 ? "+" : ""}
+                        {e.amount.toLocaleString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
 
           <section className="rounded-lg border border-border bg-card p-5">
