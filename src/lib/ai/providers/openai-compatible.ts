@@ -75,12 +75,22 @@ export function createOpenAiCompatibleProvider(
 
         const completion = await client.chat.completions.create({
           model: request.model,
-          messages: request.messages.map((m) => ({
-            role: m.role as "system" | "user" | "assistant" | "tool",
-            content: m.content,
-            ...(m.name ? { name: m.name } : {}),
-            ...(m.toolCallId ? { tool_call_id: m.toolCallId } : {}),
-          })),
+          messages: request.messages.map((m) => {
+            const base: Record<string, unknown> = {
+              role: m.role as "system" | "user" | "assistant" | "tool",
+              content: m.content,
+            };
+            if (m.name) base.name = m.name;
+            if (m.toolCallId) base.tool_call_id = m.toolCallId;
+            if (m.toolCalls && m.toolCalls.length > 0) {
+              base.tool_calls = m.toolCalls.map((tc) => ({
+                id: tc.id,
+                type: "function",
+                function: { name: tc.name, arguments: tc.arguments },
+              }));
+            }
+            return base;
+          }) as never,
           temperature: request.temperature,
           max_tokens: request.maxTokens,
           tools,

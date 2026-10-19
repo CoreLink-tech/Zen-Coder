@@ -16,9 +16,10 @@
 
 ## Authentication & sessions
 
-- Auth.js v5, database sessions, bcrypt cost 12
+- Auth.js v5, **JWT sessions** (required for Credentials provider), bcrypt cost 12
 - Middleware + `requireUser()` / `requireAdmin()`
 - Only `status === "active"` accounts sign in
+- Role/status embedded in JWT on sign-in
 
 ## Tenant isolation
 

@@ -16,6 +16,7 @@ import type {
   ToolDefinition,
 } from "./types";
 import { AiProviderError } from "./types";
+import { CREDIT_CONFIG } from "@/lib/credits/config";
 
 export interface ChatOptions {
   model?: string;
@@ -47,11 +48,8 @@ export function estimateCostUsd(
   return inputCost + outputCost;
 }
 
-/**
- * Reference conversion: 1000 internal credits = $1.00 provider cost.
- * Configurable later via billing settings (Phase 8).
- */
-export const CREDITS_PER_USD = 1000;
+/** @deprecated Prefer CREDIT_CONFIG.creditsPerUsd */
+export const CREDITS_PER_USD = CREDIT_CONFIG.creditsPerUsd;
 
 export function estimateCredits(
   modelId: string,
@@ -59,7 +57,7 @@ export function estimateCredits(
 ): number | null {
   const usd = estimateCostUsd(modelId, usage);
   if (usd === null) return null;
-  return Math.ceil(usd * CREDITS_PER_USD);
+  return Math.ceil(usd * CREDIT_CONFIG.creditsPerUsd);
 }
 
 export async function chat(

@@ -1,9 +1,8 @@
 /**
  * Auth.js (NextAuth v5) configuration for Zen-Coder.
  *
- * - Credentials provider (email + password)
- * - Database sessions via Drizzle adapter
- * - JWT + session callbacks enrich the session with role/status
+ * Credentials provider requires JWT session strategy (Auth.js constraint).
+ * Role/status are copied into the token on sign-in and exposed via session.
  */
 
 import NextAuth from "next-auth";
@@ -34,7 +33,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   session: {
-    strategy: "database",
+    // Credentials provider only works reliably with JWT sessions
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
@@ -85,16 +85,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = (user as { role?: string }).role ?? "user";
+        token.status = (user as { status?: string }).status ?? "active";
+      }
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        // Pull latest role/status from the DB user object provided by adapter
-        const dbUser = user as typeof user & {
-          role?: string;
-          status?: string;
-        };
-        session.user.role = (dbUser.role as "user" | "admin") ?? "user";
-        session.user.status = (dbUser.status as "active" | "suspended" | "deleted") ?? "active";
+        session.user.id = (token.id as string) ?? token.sub ?? "";
+        session.user.role = (token.role as "user" | "admin") ?? "user";
+        session.user.status =
+          (token.status as "active" | "suspended" | "deleted") ?? "active";
       }
       return session;
     },

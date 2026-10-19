@@ -121,10 +121,11 @@ export async function runAgent(input: AgentRunInput): Promise<AgentRunResult> {
       totalOutput += response.usage.outputTokens;
 
       if (response.toolCalls && response.toolCalls.length > 0) {
-        // Record assistant tool-call turn
+        // Record assistant tool-call turn with tool_calls for provider continuity
         messages.push({
           role: "assistant",
           content: response.content || "",
+          toolCalls: response.toolCalls,
         });
 
         for (const tc of response.toolCalls) {

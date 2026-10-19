@@ -284,7 +284,7 @@ export async function enqueueDueSchedules(): Promise<number> {
     if (!workflow) continue;
 
     // Skip if a pending/running job already exists for this schedule
-    const existing = await db.query.backgroundJobs.findFirst({
+    const existingJobs = await db.query.backgroundJobs.findMany({
       where: and(
         eq(backgroundJobs.userId, schedule.userId),
         eq(backgroundJobs.type, "workflow_run"),
@@ -293,17 +293,16 @@ export async function enqueueDueSchedules(): Promise<number> {
           eq(backgroundJobs.status, "running")
         )
       ),
+      limit: 50,
     });
-    // crude check: look at payload
-    let hasPending = false;
-    if (existing) {
+    const hasPending = existingJobs.some((job) => {
       try {
-        const p = JSON.parse(existing.payload) as { scheduleId?: string };
-        if (p.scheduleId === schedule.id) hasPending = true;
+        const payload = JSON.parse(job.payload) as { scheduleId?: string };
+        return payload.scheduleId === schedule.id;
       } catch {
-        /* ignore */
+        return false;
       }
-    }
+    });
     if (hasPending) continue;
 
     const runAt = schedule.nextRunAt && schedule.nextRunAt > now

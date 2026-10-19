@@ -142,6 +142,34 @@ async function writeLedgerEntry(
     params.type === "adjustment" ||
     params.type === "reconciliation"
   ) {
+    // Conditional update reduces oversell races for debits
+    if (params.amount < 0 && !CREDIT_CONFIG.allowNegative) {
+      const [updated] = await db
+        .update(creditAccounts)
+        .set({
+          balance: sql`${creditAccounts.balance} + ${params.amount}`,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(creditAccounts.id, account.id),
+            sql`${creditAccounts.balance} - ${creditAccounts.reserved} + ${params.amount} >= 0`
+          )
+        )
+        .returning();
+      if (!updated) {
+        // Concurrent debit won — remove orphan ledger row best-effort
+        await db
+          .delete(creditLedgerEntries)
+          .where(eq(creditLedgerEntries.id, entry.id));
+        throw new InsufficientCreditsError(
+          account.balance - account.reserved,
+          Math.abs(params.amount)
+        );
+      }
+      return { account: updated, entry };
+    }
+
     const [updated] = await db
       .update(creditAccounts)
       .set({

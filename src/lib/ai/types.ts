@@ -12,6 +12,12 @@ export interface ChatMessage {
   /** Optional tool call / tool result metadata */
   name?: string;
   toolCallId?: string;
+  /** Assistant turn that requested tools (OpenAI-compatible) */
+  toolCalls?: Array<{
+    id: string;
+    name: string;
+    arguments: string;
+  }>;
 }
 
 export interface ToolDefinition {

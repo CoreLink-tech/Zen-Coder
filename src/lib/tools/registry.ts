@@ -73,11 +73,10 @@ export async function executeTool(
     return { success: false, error: `Unknown tool: ${toolId}` };
   }
 
-  for (const perm of tool.permissions) {
-    if (perm) {
-      return { success: false, error: `Missing permission: ${perm}` };
-    }
-  }
+  // Permission scopes reserved for future RBAC.
+  // Declared permissions must not hard-fail until enforcement exists
+  // (previously any non-empty permission made the tool unusable).
+  void tool.permissions;
 
   const parsed = tool.inputSchema.safeParse(rawInput);
   if (!parsed.success) {

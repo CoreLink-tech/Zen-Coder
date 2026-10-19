@@ -33,7 +33,7 @@ export const notifyWebhookTool: ToolDefinition<
   risk: "high",
   requiresConfirmation: false,
   timeoutMs: 20_000,
-  permissions: ["automation:notify"],
+  permissions: [], // "automation:notify" when RBAC is enforced
   async execute(input) {
     try {
       const url = assertPublicHttpUrl(input.url);

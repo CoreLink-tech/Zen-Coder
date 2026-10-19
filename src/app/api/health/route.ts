@@ -4,7 +4,6 @@
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { sql } from "drizzle-orm";
 import { isStripeConfigured } from "@/lib/billing/stripe";
 import { isGitHubAppConfigured } from "@/lib/github/config";
 import { listConfiguredProviders } from "@/lib/ai";
@@ -15,7 +14,8 @@ export async function GET() {
   const started = Date.now();
   let dbOk = false;
   try {
-    await db.run(sql`SELECT 1`);
+    // Drizzle libSQL exposes the underlying client as $client
+    await db.$client.execute("SELECT 1");
     dbOk = true;
   } catch {
     dbOk = false;

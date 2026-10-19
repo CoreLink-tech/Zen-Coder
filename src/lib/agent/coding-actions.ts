@@ -14,6 +14,7 @@ import { eq } from "drizzle-orm";
 import { runAgent } from "./engine";
 import type { ChatMessage } from "@/lib/ai";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { getAccountSummary } from "@/lib/credits";
 
 export async function listCodingConversations() {
   const user = await requireUser();
@@ -65,6 +66,15 @@ export async function sendCodingMessage(
   }
   if (trimmed.length > 20_000) {
     return { success: false, error: "Message too long (max 20,000 characters)" };
+  }
+
+  // Pre-check shared credit balance before spending provider tokens
+  const summary = await getAccountSummary(user.id);
+  if (summary.available <= 0) {
+    return {
+      success: false,
+      error: "Insufficient credits. Add credits in Settings before continuing.",
+    };
   }
 
   // Create conversation if needed
