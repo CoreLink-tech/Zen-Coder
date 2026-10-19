@@ -1,72 +1,65 @@
 # Zen-Coder
 
-AI Coding & Automation Platform.
+Commercial AI platform with two workspaces on **one shared credit balance**:
 
-One product with two primary workspaces that share a single account and credit balance:
+- **Coding** — repository-aware agent, GitHub integration, approval-gated writes  
+- **Automation** — workflows, HTTP/browser checks, schedules, webhooks  
 
-- **Coding** — AI agent that understands repositories, writes and fixes code, runs tests, and works with GitHub.
-- **Automation** — Real workflow engine for monitoring, browser automation, scheduled tasks, and integrations.
+## Status
 
-## Current Status
+**Phases 0–16 complete** — core product is deployment-ready.  
+See `docs/PROJECT_STATUS.md`, `docs/DEPLOYMENT.md`, and `docs/LAUNCH_CHECKLIST.md`.
 
-**Phase 1 complete** — Application foundation and interface.
+## Stack
 
-See `docs/PROJECT_STATUS.md` for the detailed roadmap and progress.
+- Next.js App Router + TypeScript + Tailwind  
+- Turso/libSQL + Drizzle  
+- Auth.js (credentials + DB sessions)  
+- OpenAI / Anthropic / DeepSeek  
+- GitHub App (Octokit)  
+- Stripe billing  
+- Playwright (optional browser steps)  
+- Vercel (cron + hosting)
 
-## Tech Stack
-
-- Next.js (App Router) + TypeScript
-- Tailwind CSS
-- Turso / libSQL + Drizzle ORM (Phase 2)
-- Auth.js (Phase 3)
-- Multi-provider AI (DeepSeek, Claude, OpenAI) — Phase 4+
-- Deploy target: Vercel
-
-## Getting Started
+## Quick start
 
 ```bash
-# Install dependencies
+cp .env.example .env.local
+# set AUTH_SECRET and at least one AI provider key
+
 npm install
-
-# Run development server
+npm run db:push
 npm run dev
+```
 
-# Type check
-npx tsc --noEmit
+Open http://localhost:3000 — register, then use Coding / Automation / Settings.
 
-# Lint
-npm run lint
-
-# Production build
+```bash
+# Optional
+npm run playwright:install   # browser automation
+npm run typecheck
 npm run build
 ```
 
-Copy `.env.example` to `.env.local` and fill in values as they become required (none are mandatory for the Phase 1 UI).
+## Production
 
-## Project Structure (Phase 1)
-
-```
-src/
-├── app/
-│   ├── (dashboard)/
-│   │   ├── coding/          # Coding workspace
-│   │   ├── automation/      # Automation workspace
-│   │   ├── settings/        # Shared settings
-│   │   └── layout.tsx       # Shared shell (sidebar + main)
-│   ├── layout.tsx
-│   └── page.tsx             # Redirects to /coding
-├── components/
-│   ├── layout/              # Sidebar, Header
-│   └── ui/                  # EmptyState, LoadingState, ErrorState, Button, Card
-└── lib/                     # Shared utilities (expanding in later phases)
-```
+1. Follow **`docs/DEPLOYMENT.md`** (env matrix, Vercel, Turso, webhooks)  
+2. Run **`docs/LAUNCH_CHECKLIST.md`** smoke tests  
+3. Promote an admin: `UPDATE users SET role = 'admin' WHERE email = '…'`  
 
 ## Documentation
 
-- `docs/PROJECT_STATUS.md` — Phase progress and next steps
-- `docs/ARCHITECTURE.md` — High-level architecture
-- `docs/DECISIONS.md` — Architectural decisions
+| Doc | Topic |
+|-----|--------|
+| `docs/DEPLOYMENT.md` | Env vars, Vercel, DB |
+| `docs/LAUNCH_CHECKLIST.md` | Smoke tests |
+| `docs/SECURITY.md` | Threat model |
+| `docs/OPERATIONS.md` | Runbooks |
+| `docs/BILLING.md` | Stripe |
+| `docs/GITHUB.md` | GitHub App |
+| `docs/AUTOMATION_ENGINE.md` | Workflows |
+| `docs/CREDITS_AND_BILLING.md` | Ledger |
 
 ## License
 
-Private — CoreLink-tech
+Proprietary — CoreLink-tech / Zen-Coder.

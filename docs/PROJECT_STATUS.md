@@ -2,32 +2,39 @@
 
 ## Current Phase
 
-**Phase 15 — Security and reliability hardening** (completed this session)
+**Phase 16 — Deployment readiness** (completed)
 
-## Completed Work
+## All phases 0–16 complete
 
-### Phase 0–14
-- Through admin and observability
+| Phase | Summary |
+|-------|---------|
+| 0–1 | Foundation & shell |
+| 2 | Database schema |
+| 3 | Auth.js |
+| 4 | AI providers |
+| 5 | Agent engine + Coding UI |
+| 6 | GitHub read-only |
+| 7 | Approval-gated code changes |
+| 8 | Unified credit ledger |
+| 9 | Automation foundation |
+| 10 | HTTP + browser automation |
+| 11 | Schedules & jobs |
+| 12 | Integrations & webhooks |
+| 13 | Stripe subscriptions |
+| 14 | Admin & observability |
+| 15 | Security hardening |
+| 16 | Deployment docs & launch checklist |
 
-### Phase 15
-- In-memory rate limiting (coding, checkout, inbound webhooks)
-- Message length caps
-- Security headers on dashboard routes
-- Structured error logging for agent failures
-- Expanded threat model in docs/SECURITY.md
+## Launch artifacts
 
-## Next Phase
+- `docs/DEPLOYMENT.md` — env matrix, Vercel, Turso
+- `docs/LAUNCH_CHECKLIST.md` — smoke tests
+- `README.md` — quick start
+- `.env.example` — consolidated
 
-**Phase 16 — Deployment readiness**
+## Optional future
 
-- Production env checklist
-- Migrations / seed notes
-- Smoke tests documentation
-- Launch readiness review
-
-## Remaining
-
-Phase **16** (1 phase) + optional Future cybersecurity.
+**Cybersecurity workspace** — scans, monitoring, reporting as a third workspace on the same credit balance (not built in 0–16).
 
 ## Branch
 
