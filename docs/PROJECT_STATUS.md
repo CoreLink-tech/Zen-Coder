@@ -2,32 +2,32 @@
 
 ## Current Phase
 
-**Phase 9 — Automation foundation** (completed this session)
+**Phase 10 — Website, API, and browser automation** (completed this session)
 
 ## Completed Work
 
-### Phase 0–8
-- App through unified credit ledger
+### Phase 0–9
+- Through automation workflow foundation
 
-### Phase 9
-- Workflow definition schema + validation
-- Automation tools: http_check, log_message
-- Synchronous workflow executor with step logs
-- Create / list / detail / run / pause / delete workflows
-- Versioned definitions and execution history
-- docs/AUTOMATION_ENGINE.md
+### Phase 10
+- Enhanced http_check (POST, headers, body preview)
+- http_json_assert for API response checks
+- Playwright browser_run (goto, click, fill, wait, get_text, screenshot)
+- Public URL policy (SSRF protections)
+- Timeouts and action limits
+- docs/AUTOMATION_ENGINE.md updated
 
 ## Next Phase
 
-**Phase 10 — Website, API, and browser automation**
+**Phase 11 — Background jobs and scheduling**
 
-- Richer HTTP assertions
-- Playwright-based browser automation in isolated workers
-- Screenshots and structured failure reports
+- Durable background execution
+- Cron / interval schedules
+- Overlap prevention, recovery, credit checks
 
-## Remaining after Phase 9
+## Remaining
 
-Phases **10–16** (7 phases) + optional Future cybersecurity.
+Phases **11–16** (6 phases) + optional Future cybersecurity.
 
 ## Branch
 

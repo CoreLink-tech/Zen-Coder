@@ -1,56 +1,62 @@
 # Automation Engine — Zen-Coder
 
-## Phase 9 status
+## Status
 
-Foundation is in place:
+- **Phase 9**: Workflow definitions, validation, on-demand execution
+- **Phase 10**: Enhanced HTTP/API checks + Playwright browser automation
 
-- Versioned workflow definitions (JSON schema v1)
-- Validation before save
-- On-demand execution via shared tool registry
-- Step-level logs stored on `workflow_executions`
-- UI: list, create, detail, run, pause/activate, delete
+Scheduling / durable workers: Phase 11.
 
-Scheduling and background workers arrive in Phase 11. Browser automation in Phase 10.
+## Automation tools
 
-## Definition format
+| Tool | Description |
+|------|-------------|
+| `http_check` | GET/HEAD/POST status + latency + body preview |
+| `http_json_assert` | JSON fetch + optional path/value assertion |
+| `browser_run` | Headless Chromium actions (goto, click, fill, wait, get_text, screenshot) |
+| `log_message` | Deterministic log entry |
+
+## URL policy
+
+All HTTP and browser navigation must target **public** `http`/`https` URLs.  
+Localhost, RFC1918, link-local, and metadata hosts are blocked.
+
+## Browser setup
+
+```bash
+npm install
+npm run playwright:install   # downloads Chromium
+```
+
+If Playwright or Chromium is missing, `browser_run` returns a clear error instead of crashing.
+
+## Browser limits
+
+- Max 15 actions per run  
+- Max ~60s total session time  
+- Default action timeout 15s  
+- Screenshot payload capped  
+
+Process-level isolation and worker queues are planned for Phase 11.
+
+## Definition example (browser)
 
 ```json
 {
   "version": 1,
   "steps": [
     {
-      "id": "step-1",
-      "name": "Check site",
-      "toolId": "http_check",
+      "id": "b1",
+      "name": "Open example.com",
+      "toolId": "browser_run",
       "input": {
-        "url": "https://example.com",
-        "method": "GET",
-        "expectedStatus": 200
+        "actions": [
+          { "type": "goto", "url": "https://example.com" },
+          { "type": "get_text", "selector": "h1" }
+        ]
       },
       "onFailure": "abort"
     }
   ]
 }
 ```
-
-## Automation tools (Phase 9)
-
-| Tool | Description |
-|------|-------------|
-| `http_check` | HTTP GET/HEAD status + latency (blocks private IPs) |
-| `log_message` | Deterministic log entry |
-
-## Execution
-
-`executeWorkflowDefinition` runs steps in order. On failure:
-
-- `onFailure: "abort"` stops the workflow  
-- `onFailure: "continue"` records the failure and continues  
-
-Executions are recorded with status, timestamps, and JSON step logs.
-
-## Security
-
-- Only tools registered for the `automation` workspace can be used in definitions
-- Private/local network targets blocked in `http_check`
-- All workflows and executions are user-scoped

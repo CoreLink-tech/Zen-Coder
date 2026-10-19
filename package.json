@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "playwright:install": "playwright install chromium"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",
@@ -23,6 +24,7 @@
     "next-auth": "5.0.0-beta.32",
     "octokit": "^5.0.0",
     "openai": "^6.0.0",
+    "playwright": "^1.55.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^3.25.76"

@@ -8,14 +8,18 @@ import { toolToJsonSchema } from "./types";
 import { CODING_TOOLS } from "./coding";
 import { GITHUB_TOOLS } from "./github";
 import { GITHUB_WRITE_TOOLS } from "./github-write";
-import { AUTOMATION_TOOLS } from "./automation";
+import { AUTOMATION_CORE_TOOLS } from "./automation";
+import { HTTP_TOOLS } from "./http";
+import { BROWSER_TOOLS } from "./browser";
 
 const registry = new Map<string, ToolDefinition>();
 
 const codingIds = new Set(
   [...CODING_TOOLS, ...GITHUB_TOOLS, ...GITHUB_WRITE_TOOLS].map((t) => t.id)
 );
-const automationIds = new Set(AUTOMATION_TOOLS.map((t) => t.id));
+const automationIds = new Set(
+  [...AUTOMATION_CORE_TOOLS, ...HTTP_TOOLS, ...BROWSER_TOOLS].map((t) => t.id)
+);
 
 function register(tools: ToolDefinition[]) {
   for (const tool of tools) {
@@ -29,7 +33,9 @@ function register(tools: ToolDefinition[]) {
 register(CODING_TOOLS);
 register(GITHUB_TOOLS);
 register(GITHUB_WRITE_TOOLS);
-register(AUTOMATION_TOOLS);
+register(AUTOMATION_CORE_TOOLS);
+register(HTTP_TOOLS);
+register(BROWSER_TOOLS);
 
 export function getTool(id: string): ToolDefinition | undefined {
   return registry.get(id);

@@ -79,9 +79,11 @@ export async function executeWorkflowDefinition(
       return { status: "failed", steps: logs, error: result.error };
     }
 
-    // Optional assertion for http_check: data.ok must be true if present
+    // Assertion tools expose data.ok — treat false as step failure
     if (
-      step.toolId === "http_check" &&
+      (step.toolId === "http_check" ||
+        step.toolId === "http_json_assert" ||
+        step.toolId === "browser_run") &&
       result.data &&
       typeof result.data === "object" &&
       "ok" in result.data &&
@@ -96,7 +98,7 @@ export async function executeWorkflowDefinition(
         finishedAt,
         input: step.input,
         output: result.data,
-        error: "HTTP check assertion failed (unexpected status)",
+        error: "Assertion failed (tool reported ok: false)",
       };
       logs.push(log);
       if (step.onFailure === "continue") continue;
