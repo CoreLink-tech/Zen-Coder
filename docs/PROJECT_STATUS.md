@@ -2,32 +2,33 @@
 
 ## Current Phase
 
-**Phase 10 — Website, API, and browser automation** (completed this session)
+**Phase 11 — Background jobs and scheduling** (completed this session)
 
 ## Completed Work
 
-### Phase 0–9
-- Through automation workflow foundation
+### Phase 0–10
+- Through HTTP/browser automation
 
-### Phase 10
-- Enhanced http_check (POST, headers, body preview)
-- http_json_assert for API response checks
-- Playwright browser_run (goto, click, fill, wait, get_text, screenshot)
-- Public URL policy (SSRF protections)
-- Timeouts and action limits
-- docs/AUTOMATION_ENGINE.md updated
+### Phase 11
+- workflow_schedules and background_jobs tables
+- Interval + simple cron next-run computation
+- Job queue with claim, retry, overlap prevention
+- /api/cron/process-jobs + vercel.json minute cron
+- Credit check and deduction for scheduled runs
+- Schedule UI on workflow detail
+- docs updated
 
 ## Next Phase
 
-**Phase 11 — Background jobs and scheduling**
+**Phase 12 — Additional automation integrations**
 
-- Durable background execution
-- Cron / interval schedules
-- Overlap prevention, recovery, credit checks
+- More HTTP/API patterns
+- Optional safer notification hooks
+- Permission model expansion
 
 ## Remaining
 
-Phases **11–16** (6 phases) + optional Future cybersecurity.
+Phases **12–16** (5 phases) + optional Future cybersecurity.
 
 ## Branch
 

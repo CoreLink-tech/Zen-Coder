@@ -489,7 +489,92 @@ export const workflowsRelations = relations(workflows, ({ one, many }) => ({
   }),
   versions: many(workflowVersions),
   executions: many(workflowExecutions),
+  schedules: many(workflowSchedules),
 }));
+
+// ---------------------------------------------------------------------------
+// Workflow schedules
+// ---------------------------------------------------------------------------
+
+export const workflowSchedules = sqliteTable(
+  "workflow_schedules",
+  {
+    id: id(),
+    workflowId: text("workflow_id")
+      .notNull()
+      .references(() => workflows.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** interval | cron */
+    type: text("type", { enum: ["interval", "cron"] }).notNull(),
+    /** For interval: minutes between runs. For cron: 5-field expression */
+    expression: text("expression").notNull(),
+    enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+    /** Prevent concurrent runs of the same workflow */
+    preventOverlap: integer("prevent_overlap", { mode: "boolean" })
+      .notNull()
+      .default(true),
+    lastRunAt: integer("last_run_at", { mode: "timestamp" }),
+    nextRunAt: integer("next_run_at", { mode: "timestamp" }),
+    ...timestamps,
+  },
+  (t) => [
+    index("workflow_schedules_workflow_id_idx").on(t.workflowId),
+    index("workflow_schedules_next_run_at_idx").on(t.nextRunAt),
+    index("workflow_schedules_user_id_idx").on(t.userId),
+  ]
+);
+
+export const workflowSchedulesRelations = relations(
+  workflowSchedules,
+  ({ one }) => ({
+    workflow: one(workflows, {
+      fields: [workflowSchedules.workflowId],
+      references: [workflows.id],
+    }),
+    user: one(users, {
+      fields: [workflowSchedules.userId],
+      references: [users.id],
+    }),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Background jobs (durable queue for scheduled / deferred work)
+// ---------------------------------------------------------------------------
+
+export const backgroundJobs = sqliteTable(
+  "background_jobs",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type", {
+      enum: ["workflow_run", "generic"],
+    })
+      .notNull()
+      .default("workflow_run"),
+    payload: text("payload").notNull(), // JSON
+    status: text("status", {
+      enum: ["pending", "running", "succeeded", "failed", "cancelled"],
+    })
+      .notNull()
+      .default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    runAt: integer("run_at", { mode: "timestamp" }).notNull(),
+    lockedAt: integer("locked_at", { mode: "timestamp" }),
+    error: text("error"),
+    result: text("result"), // JSON
+    ...timestamps,
+  },
+  (t) => [
+    index("background_jobs_status_run_at_idx").on(t.status, t.runAt),
+    index("background_jobs_user_id_idx").on(t.userId),
+  ]
+);
 
 export const workflowVersions = sqliteTable(
   "workflow_versions",
@@ -694,5 +779,7 @@ export type ProposedChange = typeof proposedChanges.$inferSelect;
 export type Workflow = typeof workflows.$inferSelect;
 export type WorkflowVersion = typeof workflowVersions.$inferSelect;
 export type WorkflowExecution = typeof workflowExecutions.$inferSelect;
+export type WorkflowSchedule = typeof workflowSchedules.$inferSelect;
+export type BackgroundJob = typeof backgroundJobs.$inferSelect;
 export type CreditAccount = typeof creditAccounts.$inferSelect;
 export type CreditLedgerEntry = typeof creditLedgerEntries.$inferSelect;

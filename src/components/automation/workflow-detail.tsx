@@ -86,7 +86,7 @@ export function WorkflowDetail({
   }
 
   return (
-    <div className="flex-1 space-y-6 overflow-auto p-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">{workflow.name}</h2>
