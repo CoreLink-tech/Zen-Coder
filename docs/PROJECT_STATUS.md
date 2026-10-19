@@ -2,44 +2,47 @@
 
 ## Current Phase
 
-**Phase 4 — AI provider adapters** (completed this session)
+**Phase 5 — Shared agent engine and Coding interface** (completed this session)
 
 ## Completed Work
 
 ### Phase 0–1
-- Next.js foundation, shared shell, Coding / Automation / Settings workspaces
+- Next.js foundation, shared shell, Coding / Automation / Settings
 
 ### Phase 2
 - Drizzle + Turso schema, ownership-enforced queries
 
 ### Phase 3
-- Auth.js credentials auth, middleware, register/login, tenant isolation
+- Auth.js credentials auth, middleware, register/login
 
 ### Phase 4
-- Common `AiProvider` interface and normalized responses
-- DeepSeek adapter (OpenAI-compatible, `https://api.deepseek.com`)
-- Anthropic Claude adapter (`@anthropic-ai/sdk`)
-- OpenAI adapter (`openai` SDK)
-- Model registry with Oct 2026 IDs and reference pricing
-- `chat()` helper with cost/credit estimates
-- `GET /api/ai/providers` (auth-gated, no keys exposed)
-- `docs/AI_PROVIDERS.md`
+- Multi-provider AI adapters (DeepSeek, Claude, OpenAI)
+
+### Phase 5
+- Shared agent engine (plan → tool calls → synthesize)
+- Tool registry with validation, timeout, permission hooks
+- Initial coding tools: `echo`, `current_time`, `analyze_snippet`
+- Coding conversation list + chat panel UI
+- Server actions: create conversation, send message, persist tasks
+- Agent task records with status and estimated credits
+- `/coding` and `/coding/[id]` routes
 
 ## Next Phase
 
-**Phase 5 — Shared agent engine and Coding interface**
+**Phase 6 — GitHub integration and repository context**
 
-- Agent tasks + conversation persistence wiring
-- Planning and tool-call handling
-- Coding workspace interaction flow
-- Task progress / error handling
+- GitHub App installation flow
+- Repository connection and scoped access
+- File/directory inspection tools
+- Branch-aware code context
 
 ## Known Limitations
 
-- Provider SDKs need `npm install` locally
-- No live API calls verified in this environment (no keys)
-- Streaming not yet implemented
-- Usage is captured but not yet written to the credit ledger (Phase 8)
+- No streaming UI yet (shows "Thinking…" while waiting)
+- Tools are demo-grade; real repo tools come in Phase 6–7
+- Credit deductions not written to ledger yet (Phase 8)
+- Requires at least one AI provider API key for real replies
+- `npm install` must be run locally for SDKs
 
 ## Branch
 

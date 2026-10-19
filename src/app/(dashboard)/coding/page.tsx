@@ -1,19 +1,20 @@
 import { Header } from "@/components/layout/header";
-import { EmptyState } from "@/components/ui/empty-state";
+import { ConversationList } from "@/components/coding/conversation-list";
+import { ChatPanel } from "@/components/coding/chat-panel";
+import { listCodingConversations } from "@/lib/agent/coding-actions";
 
-export default function CodingPage() {
+export default async function CodingPage() {
+  const conversations = await listCodingConversations();
+
   return (
     <>
       <Header
         title="Coding"
         description="AI coding agent, repositories, and tasks"
       />
-      <div className="flex flex-1 flex-col overflow-auto p-6">
-        <EmptyState
-          title="No projects yet"
-          description="Connect a GitHub repository or start a new coding conversation. Full agent capabilities arrive in later phases."
-          actionLabel="Coming soon"
-        />
+      <div className="flex flex-1 overflow-hidden">
+        <ConversationList conversations={conversations} />
+        <ChatPanel conversationId={null} initialMessages={[]} />
       </div>
     </>
   );
