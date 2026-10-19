@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/header";
 import { WorkflowDetail } from "@/components/automation/workflow-detail";
 import { ScheduleForm } from "@/components/automation/schedule-form";
+import { WebhookPanel } from "@/components/automation/webhook-panel";
 import { getAutomationWorkflow } from "@/lib/automation/actions";
 import { listSchedulesForWorkflow } from "@/lib/automation/schedule-actions";
 
@@ -40,6 +41,10 @@ export default async function AutomationWorkflowPage({ params }: PageProps) {
                 }
               : null
           }
+        />
+        <WebhookPanel
+          workflowId={workflow.id}
+          hasSecret={Boolean(workflow.webhookSecret)}
         />
         <WorkflowDetail
           workflow={{

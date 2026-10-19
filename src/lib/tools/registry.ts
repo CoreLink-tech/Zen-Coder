@@ -11,6 +11,7 @@ import { GITHUB_WRITE_TOOLS } from "./github-write";
 import { AUTOMATION_CORE_TOOLS } from "./automation";
 import { HTTP_TOOLS } from "./http";
 import { BROWSER_TOOLS } from "./browser";
+import { INTEGRATION_TOOLS } from "./integrations";
 
 const registry = new Map<string, ToolDefinition>();
 
@@ -18,7 +19,12 @@ const codingIds = new Set(
   [...CODING_TOOLS, ...GITHUB_TOOLS, ...GITHUB_WRITE_TOOLS].map((t) => t.id)
 );
 const automationIds = new Set(
-  [...AUTOMATION_CORE_TOOLS, ...HTTP_TOOLS, ...BROWSER_TOOLS].map((t) => t.id)
+  [
+    ...AUTOMATION_CORE_TOOLS,
+    ...HTTP_TOOLS,
+    ...BROWSER_TOOLS,
+    ...INTEGRATION_TOOLS,
+  ].map((t) => t.id)
 );
 
 function register(tools: ToolDefinition[]) {
@@ -36,6 +42,7 @@ register(GITHUB_WRITE_TOOLS);
 register(AUTOMATION_CORE_TOOLS);
 register(HTTP_TOOLS);
 register(BROWSER_TOOLS);
+register(INTEGRATION_TOOLS);
 
 export function getTool(id: string): ToolDefinition | undefined {
   return registry.get(id);

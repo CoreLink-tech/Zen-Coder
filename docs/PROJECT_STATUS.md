@@ -2,33 +2,30 @@
 
 ## Current Phase
 
-**Phase 11 — Background jobs and scheduling** (completed this session)
+**Phase 12 — Additional automation integrations** (completed this session)
 
 ## Completed Work
 
-### Phase 0–10
-- Through HTTP/browser automation
+### Phase 0–11
+- Through schedules and background jobs
 
-### Phase 11
-- workflow_schedules and background_jobs tables
-- Interval + simple cron next-run computation
-- Job queue with claim, retry, overlap prevention
-- /api/cron/process-jobs + vercel.json minute cron
-- Credit check and deduction for scheduled runs
-- Schedule UI on workflow detail
-- docs updated
+### Phase 12
+- notify_webhook, http_latency_budget, http_multi_check
+- Inbound workflow webhook trigger + secret rotation UI
+- Integration risk documentation (docs/INTEGRATIONS.md)
+- Assertion handling for new tools in executor
 
 ## Next Phase
 
-**Phase 12 — Additional automation integrations**
+**Phase 13 — Subscriptions and payments**
 
-- More HTTP/API patterns
-- Optional safer notification hooks
-- Permission model expansion
+- Plans and entitlements
+- Payment provider webhooks
+- Credit grants on verified purchase
 
 ## Remaining
 
-Phases **12–16** (5 phases) + optional Future cybersecurity.
+Phases **13–16** (4 phases) + optional Future cybersecurity.
 
 ## Branch
 

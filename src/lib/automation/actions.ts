@@ -201,3 +201,36 @@ export async function deleteWorkflow(workflowId: string) {
   revalidatePath("/automation");
   return { success: result.length > 0 };
 }
+
+export async function enableWorkflowWebhook(workflowId: string) {
+  const user = await requireUser();
+  const workflow = await db.query.workflows.findFirst({
+    where: and(eq(workflows.id, workflowId), eq(workflows.userId, user.id)),
+  });
+  if (!workflow) {
+    return { success: false as const, error: "Workflow not found" };
+  }
+
+  const secret = `whsec_${crypto.randomUUID().replace(/-/g, "")}`;
+  await db
+    .update(workflows)
+    .set({ webhookSecret: secret, updatedAt: new Date() })
+    .where(eq(workflows.id, workflowId));
+
+  revalidatePath(`/automation/${workflowId}`);
+  return {
+    success: true as const,
+    secret,
+    path: `/api/webhooks/workflows/${workflowId}`,
+  };
+}
+
+export async function disableWorkflowWebhook(workflowId: string) {
+  const user = await requireUser();
+  await db
+    .update(workflows)
+    .set({ webhookSecret: null, updatedAt: new Date() })
+    .where(and(eq(workflows.id, workflowId), eq(workflows.userId, user.id)));
+  revalidatePath(`/automation/${workflowId}`);
+  return { success: true as const };
+}

@@ -470,6 +470,8 @@ export const workflows = sqliteTable(
       .default("draft"),
     // Current published version id (nullable until first publish)
     currentVersionId: text("current_version_id"),
+    /** Optional secret for inbound webhook trigger */
+    webhookSecret: text("webhook_secret"),
     ...timestamps,
   },
   (t) => [

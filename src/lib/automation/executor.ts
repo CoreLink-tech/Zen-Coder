@@ -83,7 +83,10 @@ export async function executeWorkflowDefinition(
     if (
       (step.toolId === "http_check" ||
         step.toolId === "http_json_assert" ||
-        step.toolId === "browser_run") &&
+        step.toolId === "http_latency_budget" ||
+        step.toolId === "http_multi_check" ||
+        step.toolId === "browser_run" ||
+        step.toolId === "notify_webhook") &&
       result.data &&
       typeof result.data === "object" &&
       "ok" in result.data &&
