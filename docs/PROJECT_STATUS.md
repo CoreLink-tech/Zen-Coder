@@ -2,47 +2,32 @@
 
 ## Current Phase
 
-**Phase 8 — Unified credit ledger** (completed this session)
+**Phase 9 — Automation foundation** (completed this session)
 
 ## Completed Work
 
-### Phase 0–7
-- Foundation through approval-gated GitHub code changes
+### Phase 0–8
+- App through unified credit ledger
 
-### Phase 8
-- Ledger service: grant, purchase, usage, refund, reserve, release
-- Idempotency via unique operationId
-- Insufficient-credits protection (no negative balance)
-- Welcome grant on registration (5,000 credits)
-- Coding agent usage charged to shared balance
-- Live credit balance in sidebar
-- Settings: available/balance/reserved + recent ledger
-- docs/CREDITS_AND_BILLING.md
+### Phase 9
+- Workflow definition schema + validation
+- Automation tools: http_check, log_message
+- Synchronous workflow executor with step logs
+- Create / list / detail / run / pause / delete workflows
+- Versioned definitions and execution history
+- docs/AUTOMATION_ENGINE.md
 
 ## Next Phase
 
-**Phase 9 — Automation foundation**
+**Phase 10 — Website, API, and browser automation**
 
-- Workflow schema (already partially in DB)
-- Workflow create UI + validation
-- Tool registry permission model for automation
-- Controlled execution state + history
+- Richer HTTP assertions
+- Playwright-based browser automation in isolated workers
+- Screenshots and structured failure reports
 
-## Remaining phases
+## Remaining after Phase 9
 
-| Phase | Focus |
-|-------|--------|
-| 9 | Automation foundation |
-| 10 | Website / API / browser automation |
-| 11 | Background jobs & scheduling |
-| 12 | Additional automation integrations |
-| 13 | Subscriptions & payments |
-| 14 | Administration & observability |
-| 15 | Security & reliability hardening |
-| 16 | Deployment readiness |
-| Future | Cybersecurity workspace |
-
-**8 phases left** after this one (9–16), plus optional Future.
+Phases **10–16** (7 phases) + optional Future cybersecurity.
 
 ## Branch
 

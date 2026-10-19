@@ -8,8 +8,14 @@ import { toolToJsonSchema } from "./types";
 import { CODING_TOOLS } from "./coding";
 import { GITHUB_TOOLS } from "./github";
 import { GITHUB_WRITE_TOOLS } from "./github-write";
+import { AUTOMATION_TOOLS } from "./automation";
 
 const registry = new Map<string, ToolDefinition>();
+
+const codingIds = new Set(
+  [...CODING_TOOLS, ...GITHUB_TOOLS, ...GITHUB_WRITE_TOOLS].map((t) => t.id)
+);
+const automationIds = new Set(AUTOMATION_TOOLS.map((t) => t.id));
 
 function register(tools: ToolDefinition[]) {
   for (const tool of tools) {
@@ -20,20 +26,24 @@ function register(tools: ToolDefinition[]) {
   }
 }
 
-// Register built-in tools
 register(CODING_TOOLS);
 register(GITHUB_TOOLS);
 register(GITHUB_WRITE_TOOLS);
+register(AUTOMATION_TOOLS);
 
 export function getTool(id: string): ToolDefinition | undefined {
   return registry.get(id);
 }
 
 export function listTools(workspace?: "coding" | "automation"): ToolDefinition[] {
-  // For now all registered tools are coding tools
   const all = Array.from(registry.values());
-  if (!workspace || workspace === "coding") return all;
-  return []; // automation tools arrive in Phase 9+
+  if (workspace === "automation") {
+    return all.filter((t) => automationIds.has(t.id));
+  }
+  if (workspace === "coding") {
+    return all.filter((t) => codingIds.has(t.id));
+  }
+  return all;
 }
 
 export function listToolSchemas(workspace?: "coding" | "automation") {
@@ -50,15 +60,9 @@ export async function executeTool(
     return { success: false, error: `Unknown tool: ${toolId}` };
   }
 
-  // Permission check (server-side)
-  // Full permission system expands later; for now empty = allowed
   for (const perm of tool.permissions) {
-    // Placeholder: reject if any permission is required and not granted
     if (perm) {
-      return {
-        success: false,
-        error: `Missing permission: ${perm}`,
-      };
+      return { success: false, error: `Missing permission: ${perm}` };
     }
   }
 
