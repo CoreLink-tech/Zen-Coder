@@ -1,46 +1,79 @@
 # Security — Zen-Coder
 
-## Authentication (Phase 3)
+## Threat model (assumptions)
 
-- **Library**: Auth.js v5 (`next-auth@5.0.0-beta.32`)
-- **Session strategy**: Database sessions (Drizzle adapter)
-- **Provider**: Credentials (email + password)
-- **Password hashing**: bcrypt (cost factor 12)
-- **Secrets**: `AUTH_SECRET` (required in production)
+**We assume:**
+- Transport is HTTPS in production
+- `AUTH_SECRET`, Stripe, GitHub App private key, and AI keys remain server-only
+- Admins are trusted operators
+- Users may be adversarial toward other tenants and the platform
 
-### Route protection
+**Out of scope / residual risk:**
+- Full multi-instance rate limiting (in-memory limiter is per process)
+- Browser tool abuse against third-party sites if a user targets unauthorized systems (policy + public-URL checks mitigate SSRF to private nets)
+- Supply-chain compromise of npm packages
+- Prompt injection that tricks the model into proposing harmful repo changes (mitigated by **human approval** before GitHub writes)
 
-1. **Middleware** (`src/middleware.ts`) — redirects unauthenticated users away from `/coding`, `/automation`, `/settings`.
-2. **Server layout** (`(dashboard)/layout.tsx`) — calls `requireUser()` so Server Components never render for anonymous users.
-3. **Query helpers** — all data access requires a `userId` and filters by ownership.
+## Authentication & sessions
 
-### Account status
-
-- Only `status === "active"` users can sign in.
-- Suspended / deleted accounts are rejected in `authorize`.
-
-### Roles
-
-- `user` (default) and `admin`.
-- `requireAdmin()` helper available for future admin routes.
+- Auth.js v5, database sessions, bcrypt cost 12
+- Middleware + `requireUser()` / `requireAdmin()`
+- Only `status === "active"` accounts sign in
 
 ## Tenant isolation
 
-Every table that holds user data includes a `user_id` foreign key.  
-Server-side helpers always include `eq(table.userId, userId)` in the `where` clause.
+- All user data scoped by `user_id`
+- GitHub installations and repos owned per user
+- Tool execution receives `userId` in context; write tools resolve ownership before acting
 
-Cross-user reads or writes are rejected by construction, not by client-side checks.
+## High-risk actions
+
+| Action | Control |
+|--------|---------|
+| Repo file write | Propose → user approve → apply |
+| Scheduled runs | Credit check + overlap prevention |
+| Outbound webhook | Public URL only; HTTPS in production |
+| Inbound webhook | Shared secret header |
+| Stripe grants | Signature-verified webhooks + idempotent ledger |
+| Admin pages | `role === admin` |
+
+## Rate limits (Phase 15)
+
+| Surface | Limit (default) |
+|---------|-----------------|
+| Coding messages | 30 / minute / user |
+| Checkout | 10 / minute / user+IP |
+| Inbound workflow webhook | 30 / minute / IP+workflow |
+
+Implementation: `src/lib/security/rate-limit.ts` (in-memory). For horizontal scale, replace with Redis/Upstash.
+
+## Input validation
+
+- Zod on tool inputs and workflow definitions
+- Message max length 20,000 characters
+- Workflow steps capped; browser actions capped
+- HTTP/browser URL policy blocks private/link-local/metadata hosts
 
 ## Secrets
 
-- Never commit `.env` / `.env.local`.
-- Provider API keys stay on the server only.
-- Auth secret must be a long random value (`openssl rand -base64 32`).
+- Never log API keys, passwords, webhook secrets (logger redacts known fields)
+- Stripe webhook uses raw body + signature
+- Cron endpoint requires `CRON_SECRET` in production
 
-## Known limitations (Phase 3)
+## Provider outages
 
-- No rate limiting on login/register yet (to be added).
-- No email verification flow yet.
-- No OAuth providers yet (GitHub App arrives in Phase 6).
-- Auth.js v5 remains in beta as of late 2026; monitor security advisories.
-- Better Auth is a recommended alternative for new projects if we revisit auth later.
+- Agent engine catches provider errors and returns failed status without crashing the request
+- Billing webhook returns 500 only on handler exceptions (Stripe retries)
+- Health endpoint reports DB and integration configuration without exposing secrets
+
+## Security headers
+
+Middleware sets `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` on dashboard routes.
+
+## Residual risks to accept or harden later
+
+1. Distributed rate limit across many serverless instances  
+2. Stricter CSP (currently allows unsafe-inline for Next/dev practicality)  
+3. CAPTCHA on register if abuse appears  
+4. Audit log table for admin actions  
+5. Automatic credit clawback on refund (manual adjustment today)  

@@ -13,6 +13,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { workflows } from "@/lib/db/schema";
 import { enqueueWorkflowJob } from "@/lib/automation/jobs";
+import { rateLimit, clientKey } from "@/lib/security/rate-limit";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -20,6 +21,12 @@ interface RouteParams {
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  const rl = rateLimit(clientKey(undefined, ip, `webhook:${id}`), 30, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+  }
 
   const secret =
     req.headers.get("x-zen-webhook-secret") ||

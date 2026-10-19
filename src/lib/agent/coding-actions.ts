@@ -13,6 +13,7 @@ import { agentTasks, conversations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { runAgent } from "./engine";
 import type { ChatMessage } from "@/lib/ai";
+import { rateLimit } from "@/lib/security/rate-limit";
 
 export async function listCodingConversations() {
   const user = await requireUser();
@@ -54,9 +55,16 @@ export async function sendCodingMessage(
   model?: string
 ): Promise<SendMessageResult> {
   const user = await requireUser();
+  const rl = rateLimit(`coding:send:${user.id}`, 30, 60_000);
+  if (!rl.ok) {
+    return { success: false, error: "Rate limit exceeded. Try again shortly." };
+  }
   const trimmed = content.trim();
   if (!trimmed) {
     return { success: false, error: "Message cannot be empty" };
+  }
+  if (trimmed.length > 20_000) {
+    return { success: false, error: "Message too long (max 20,000 characters)" };
   }
 
   // Create conversation if needed

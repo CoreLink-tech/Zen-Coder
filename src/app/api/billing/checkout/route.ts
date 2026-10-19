@@ -10,6 +10,7 @@ import {
   getAppUrl,
   isStripeConfigured,
 } from "@/lib/billing/stripe";
+import { rateLimit, clientKey } from "@/lib/security/rate-limit";
 import {
   getStripePriceId,
   getPackStripePriceId,
@@ -21,6 +22,12 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id || !session.user.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  const rl = rateLimit(clientKey(session.user.id, ip, "checkout"), 10, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
   if (!isStripeConfigured()) {

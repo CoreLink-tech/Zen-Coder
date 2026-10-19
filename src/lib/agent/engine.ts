@@ -9,6 +9,7 @@ import { chat, estimateCredits, type ChatMessage } from "@/lib/ai";
 import { executeTool, listToolSchemas } from "@/lib/tools/registry";
 import type { ToolContext } from "@/lib/tools/types";
 import { DEFAULT_MODEL_ID } from "@/lib/ai/models";
+import { logger } from "@/lib/observability/logger";
 
 export type AgentStepType =
   | "thinking"
@@ -214,6 +215,13 @@ export async function runAgent(input: AgentRunInput): Promise<AgentRunResult> {
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Agent failed";
+    logger.error("agent_run_failed", {
+      userId: input.userId,
+      workspace: input.workspace,
+      taskId: input.taskId,
+      model,
+      error: message,
+    });
     steps.push({
       type: "error",
       content: message,

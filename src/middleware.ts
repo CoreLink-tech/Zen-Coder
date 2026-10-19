@@ -1,6 +1,6 @@
 /**
  * Auth.js middleware — protects dashboard routes including /admin.
- * Admin role is enforced in page loaders (requireAdmin).
+ * Adds baseline security headers on matched routes.
  */
 
 import { auth } from "@/lib/auth";
@@ -18,17 +18,27 @@ export default auth((req) => {
     pathname.startsWith("/settings") ||
     pathname.startsWith("/admin");
 
+  let res: NextResponse;
+
   if (isDashboard && !isLoggedIn) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+    res = NextResponse.redirect(loginUrl);
+  } else if (isAuthPage && isLoggedIn) {
+    res = NextResponse.redirect(new URL("/coding", req.nextUrl.origin));
+  } else {
+    res = NextResponse.next();
   }
 
-  if (isAuthPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/coding", req.nextUrl.origin));
-  }
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=()"
+  );
 
-  return NextResponse.next();
+  return res;
 });
 
 export const config = {
