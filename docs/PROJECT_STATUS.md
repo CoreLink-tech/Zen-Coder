@@ -2,30 +2,32 @@
 
 ## Current Phase
 
-**Phase 12 — Additional automation integrations** (completed this session)
+**Phase 13 — Subscriptions and payments** (completed this session)
 
 ## Completed Work
 
-### Phase 0–11
-- Through schedules and background jobs
+### Phase 0–12
+- Through automation integrations
 
-### Phase 12
-- notify_webhook, http_latency_budget, http_multi_check
-- Inbound workflow webhook trigger + secret rotation UI
-- Integration risk documentation (docs/INTEGRATIONS.md)
-- Assertion handling for new tools in executor
+### Phase 13
+- Plan/pack definitions and Stripe price mapping
+- subscriptions table
+- Checkout session API (authenticated)
+- Webhook with signature verification + idempotent credit grants
+- Settings plans UI
+- docs/BILLING.md
 
 ## Next Phase
 
-**Phase 13 — Subscriptions and payments**
+**Phase 14 — Administration and observability**
 
-- Plans and entitlements
-- Payment provider webhooks
-- Credit grants on verified purchase
+- Admin views for users, usage, failures
+- Structured logging / health endpoints
+- Support investigation tools
 
 ## Remaining
 
-Phases **13–16** (4 phases) + optional Future cybersecurity.
+Phases **14–16** (3 phases) + optional Future cybersecurity.
 
 ## Branch
 

@@ -8,16 +8,26 @@ import {
   listLedgerEntries,
   CREDIT_CONFIG,
 } from "@/lib/credits";
+import { PlansPanel } from "@/components/billing/plans-panel";
+import { PLANS, CREDIT_PACKS } from "@/lib/billing/plans";
+import { isStripeConfigured } from "@/lib/billing/stripe";
+import { db } from "@/lib/db";
+import { subscriptions } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const [summary, entries, github] = await Promise.all([
+  const [summary, entries, github, sub] = await Promise.all([
     getAccountSummary(user.id),
     listLedgerEntries(user.id, 15),
     getGitHubStatus(),
+    db.query.subscriptions.findFirst({
+      where: eq(subscriptions.userId, user.id),
+    }),
   ]);
 
   const configuredProviders = listConfiguredProviders();
+  const currentPlanId = sub?.planId ?? "free";
 
   return (
     <>
@@ -130,6 +140,23 @@ export default async function SettingsPage() {
               Default model: {MODEL_REGISTRY[0]?.id ?? "—"}
             </p>
           </section>
+
+          <PlansPanel
+            plans={PLANS.map((p) => ({
+              id: p.id,
+              name: p.name,
+              description: p.description,
+              monthlyCredits: p.monthlyCredits,
+              features: p.features,
+            }))}
+            packs={CREDIT_PACKS.map((p) => ({
+              id: p.id,
+              name: p.name,
+              credits: p.credits,
+            }))}
+            currentPlanId={currentPlanId}
+            stripeConfigured={isStripeConfigured()}
+          />
 
           <GitHubSettings
             configured={github.configured}

@@ -27,7 +27,8 @@
     "playwright": "^1.55.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "stripe": "^18.0.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

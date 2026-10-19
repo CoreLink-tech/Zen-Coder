@@ -765,6 +765,50 @@ export const creditLedgerEntriesRelations = relations(
 );
 
 // ---------------------------------------------------------------------------
+// Subscriptions (Stripe-backed)
+// ---------------------------------------------------------------------------
+
+export const subscriptions = sqliteTable(
+  "subscriptions",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    planId: text("plan_id").notNull(), // free | starter | pro
+    status: text("status", {
+      enum: [
+        "active",
+        "canceled",
+        "past_due",
+        "incomplete",
+        "trialing",
+        "unpaid",
+      ],
+    })
+      .notNull()
+      .default("active"),
+    stripeCustomerId: text("stripe_customer_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    stripePriceId: text("stripe_price_id"),
+    currentPeriodEnd: integer("current_period_end", { mode: "timestamp" }),
+    cancelAtPeriodEnd: integer("cancel_at_period_end", { mode: "boolean" }).default(false),
+    ...timestamps,
+  },
+  (t) => [
+    index("subscriptions_user_id_idx").on(t.userId),
+    uniqueIndex("subscriptions_stripe_subscription_id_idx").on(t.stripeSubscriptionId),
+  ]
+);
+
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
 // Type exports
 // ---------------------------------------------------------------------------
 
@@ -783,5 +827,6 @@ export type WorkflowVersion = typeof workflowVersions.$inferSelect;
 export type WorkflowExecution = typeof workflowExecutions.$inferSelect;
 export type WorkflowSchedule = typeof workflowSchedules.$inferSelect;
 export type BackgroundJob = typeof backgroundJobs.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
 export type CreditAccount = typeof creditAccounts.$inferSelect;
 export type CreditLedgerEntry = typeof creditLedgerEntries.$inferSelect;
