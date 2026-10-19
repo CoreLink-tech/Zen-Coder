@@ -2,52 +2,45 @@
 
 ## Current Phase
 
-**Phase 3 — Authentication and account security** (completed this session)
+**Phase 4 — AI provider adapters** (completed this session)
 
 ## Completed Work
 
-### Phase 0
-- Repository audited (was empty)
-- Stack decisions confirmed
-
-### Phase 1
-- Next.js App Router + TypeScript + Tailwind foundation
-- Shared dashboard shell (Coding / Automation / Settings)
-- Reusable UI primitives
-- Initial documentation
+### Phase 0–1
+- Next.js foundation, shared shell, Coding / Automation / Settings workspaces
 
 ### Phase 2
-- Drizzle ORM + Turso/libSQL schema and client
-- Ownership-enforced query helpers
-- Credit account stubs
-- docs/DATABASE.md
+- Drizzle + Turso schema, ownership-enforced queries
 
 ### Phase 3
-- Auth.js v5 (next-auth@5.0.0-beta.32) with Credentials provider
-- Database sessions via @auth/drizzle-adapter
-- Schema extensions: passwordHash, accounts, sessions, verificationTokens
-- Register + Login pages and server actions (bcrypt + zod validation)
-- Middleware + dashboard layout protection (`requireUser`)
-- Settings page shows live user + credit balance
-- Sign-out in sidebar
-- docs/SECURITY.md
+- Auth.js credentials auth, middleware, register/login, tenant isolation
+
+### Phase 4
+- Common `AiProvider` interface and normalized responses
+- DeepSeek adapter (OpenAI-compatible, `https://api.deepseek.com`)
+- Anthropic Claude adapter (`@anthropic-ai/sdk`)
+- OpenAI adapter (`openai` SDK)
+- Model registry with Oct 2026 IDs and reference pricing
+- `chat()` helper with cost/credit estimates
+- `GET /api/ai/providers` (auth-gated, no keys exposed)
+- `docs/AI_PROVIDERS.md`
 
 ## Next Phase
 
-**Phase 4 — AI provider adapters**
+**Phase 5 — Shared agent engine and Coding interface**
 
-- Common provider interface
-- DeepSeek, Claude, OpenAI adapters
-- Model configuration and usage metadata capture
+- Agent tasks + conversation persistence wiring
+- Planning and tool-call handling
+- Coding workspace interaction flow
+- Task progress / error handling
 
 ## Known Limitations
 
-- Auth packages may need `npm install` locally (sandbox installs are unreliable)
-- No rate limiting on auth endpoints yet
-- No email verification
-- Auth.js v5 is still beta (monitor advisories; Better Auth is a future option)
-- Migrations not yet applied to a live Turso instance
+- Provider SDKs need `npm install` locally
+- No live API calls verified in this environment (no keys)
+- Streaming not yet implemented
+- Usage is captured but not yet written to the credit ledger (Phase 8)
 
 ## Branch
 
-- `main` (pushed through Phase 2; Phase 3 commit pending)
+- `main`

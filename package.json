@@ -14,12 +14,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0",
     "@auth/drizzle-adapter": "^1.11.3",
     "@libsql/client": "^0.15.15",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.44.5",
     "next": "16.4.2",
     "next-auth": "5.0.0-beta.32",
+    "openai": "^6.0.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^3.25.76"
