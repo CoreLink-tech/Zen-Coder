@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // cacheComponents disabled — conflicts with route segment configs
+  // and several App Router patterns on Next 16 during production build
   turbopack: {
     rules: {
       "*.css": {

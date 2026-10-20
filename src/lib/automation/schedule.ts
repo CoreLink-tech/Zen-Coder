@@ -50,7 +50,7 @@ function nextCronDate(expression: string, from: Date): Date {
 
 function matchField(field: string, value: number): boolean {
   if (field === "*") return true;
-  if (field.startsWith("*/")) {
+  if (field.startsWith("*" + "/")) {
     const step = Number(field.slice(2));
     if (!Number.isFinite(step) || step <= 0) return false;
     return value % step === 0;

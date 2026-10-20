@@ -15,12 +15,10 @@ export function getStripe(): Stripe {
     throw new Error("STRIPE_SECRET_KEY is not configured");
   }
   if (!stripe) {
-    // apiVersion is required by types; use the package's expected latest via cast
-    // so upgrades do not break on a hard-coded pin.
     stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-06-20" as Stripe.LatestApiVersion,
-      typescript: true,
-    });
+      // Use a widely supported API version string
+      apiVersion: "2024-06-20",
+    } as Stripe.StripeConfig);
   }
   return stripe;
 }
