@@ -4,7 +4,12 @@ import { ChatPanel } from "@/components/coding/chat-panel";
 import { listCodingConversations } from "@/lib/agent/coding-actions";
 
 export default async function CodingPage() {
-  const conversations = await listCodingConversations();
+  let conversations: Awaited<ReturnType<typeof listCodingConversations>> = [];
+  try {
+    conversations = await listCodingConversations();
+  } catch (e) {
+    console.error("listCodingConversations", e);
+  }
 
   return (
     <>
@@ -12,7 +17,7 @@ export default async function CodingPage() {
         title="Coding"
         description="AI coding agent, repositories, and tasks"
       />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <ConversationList conversations={conversations} />
         <ChatPanel conversationId={null} initialMessages={[]} />
       </div>

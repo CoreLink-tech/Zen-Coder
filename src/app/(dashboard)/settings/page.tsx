@@ -17,17 +17,35 @@ import { eq } from "drizzle-orm";
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const [summary, entries, github, sub] = await Promise.all([
-    getAccountSummary(user.id),
-    listLedgerEntries(user.id, 15),
-    getGitHubStatus(),
-    db.query.subscriptions.findFirst({
-      where: eq(subscriptions.userId, user.id),
-    }),
-  ]);
+
+  let summary = { balance: 0, reserved: 0, available: 0, accountId: "" };
+  let entries: Awaited<ReturnType<typeof listLedgerEntries>> = [];
+  let github = {
+    configured: false,
+    installUrl: null as string | null,
+    installations: [] as Awaited<ReturnType<typeof getGitHubStatus>>["installations"],
+    repositories: [] as Awaited<ReturnType<typeof getGitHubStatus>>["repositories"],
+  };
+  let currentPlanId = "free";
+
+  try {
+    const [s, e, g, sub] = await Promise.all([
+      getAccountSummary(user.id),
+      listLedgerEntries(user.id, 15),
+      getGitHubStatus().catch(() => github),
+      db.query.subscriptions
+        .findFirst({ where: eq(subscriptions.userId, user.id) })
+        .catch(() => null),
+    ]);
+    summary = s;
+    entries = e;
+    github = g;
+    currentPlanId = sub?.planId ?? "free";
+  } catch (err) {
+    console.error("settings load", err);
+  }
 
   const configuredProviders = listConfiguredProviders();
-  const currentPlanId = sub?.planId ?? "free";
 
   return (
     <>
@@ -35,66 +53,64 @@ export default async function SettingsPage() {
         title="Settings"
         description="Account, models, credits, and integrations"
       />
-      <div className="flex flex-1 flex-col overflow-auto p-6">
-        <div className="grid max-w-2xl gap-6">
-          <section className="rounded-lg border border-border bg-card p-5">
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto p-4 sm:p-6">
+        <div className="mx-auto grid w-full max-w-2xl gap-4 sm:gap-6">
+          <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
             <h2 className="text-sm font-semibold">Account</h2>
             <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between">
+              <div className="flex flex-wrap justify-between gap-2">
                 <dt className="text-muted-foreground">Email</dt>
-                <dd>{user.email}</dd>
+                <dd className="break-all">{user.email}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Name</dt>
-                <dd>{user.name || "—"}</dd>
-              </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-2">
                 <dt className="text-muted-foreground">Role</dt>
                 <dd className="capitalize">{user.role}</dd>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-2">
                 <dt className="text-muted-foreground">Status</dt>
                 <dd className="capitalize">{user.status}</dd>
               </div>
             </dl>
           </section>
 
-          <section className="rounded-lg border border-border bg-card p-5">
+          <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
             <h2 className="text-sm font-semibold">Credits</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              One shared balance for Coding and Automation. Rate:{" "}
-              {CREDIT_CONFIG.creditsPerUsd.toLocaleString()} credits = $1.00
-              provider cost ({CREDIT_CONFIG.version}).
+              Shared balance for Coding and Automation (
+              {CREDIT_CONFIG.creditsPerUsd} credits / USD).
             </p>
-            <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Available</dt>
-                <dd className="font-medium">
-                  {summary.available.toLocaleString()} credits
-                </dd>
+            <div className="mt-3 grid grid-cols-3 gap-3 text-center text-sm">
+              <div className="rounded-md bg-muted/50 p-3">
+                <div className="text-xs text-muted-foreground">Balance</div>
+                <div className="mt-1 text-lg font-semibold">
+                  {summary.balance.toLocaleString()}
+                </div>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Balance</dt>
-                <dd>{summary.balance.toLocaleString()}</dd>
+              <div className="rounded-md bg-muted/50 p-3">
+                <div className="text-xs text-muted-foreground">Reserved</div>
+                <div className="mt-1 text-lg font-semibold">
+                  {summary.reserved.toLocaleString()}
+                </div>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Reserved</dt>
-                <dd>{summary.reserved.toLocaleString()}</dd>
+              <div className="rounded-md bg-muted/50 p-3">
+                <div className="text-xs text-muted-foreground">Available</div>
+                <div className="mt-1 text-lg font-semibold">
+                  {summary.available.toLocaleString()}
+                </div>
               </div>
-            </dl>
-
+            </div>
             {entries.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Recent activity
                 </h3>
-                <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-xs">
+                <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-sm">
                   {entries.map((e) => (
                     <li
                       key={e.id}
-                      className="flex justify-between gap-2 border-b border-border/50 py-1.5"
+                      className="flex items-center justify-between gap-2 border-b border-border/60 py-1.5 last:border-0"
                     >
-                      <span className="truncate text-muted-foreground">
+                      <span className="min-w-0 truncate text-muted-foreground">
                         {e.type}
                         {e.reason ? ` · ${e.reason}` : ""}
                         {e.model ? ` · ${e.model}` : ""}
@@ -114,7 +130,7 @@ export default async function SettingsPage() {
             )}
           </section>
 
-          <section className="rounded-lg border border-border bg-card p-5">
+          <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
             <h2 className="text-sm font-semibold">AI Providers & Models</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Platform-managed keys. Configured providers:
@@ -122,7 +138,7 @@ export default async function SettingsPage() {
             <ul className="mt-2 space-y-1 text-sm">
               {configuredProviders.length === 0 ? (
                 <li className="text-muted-foreground">
-                  None configured — set API keys in environment
+                  None configured — set API keys in Vercel env
                 </li>
               ) : (
                 configuredProviders.map((p) => (

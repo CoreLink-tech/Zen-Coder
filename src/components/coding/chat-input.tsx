@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 interface ChatInputProps {
-  onSend: (message: string) => Promise<void>;
+  onSend: (message: string) => void | Promise<void>;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -49,7 +49,7 @@ export function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-border bg-card p-4"
+      className="shrink-0 border-t border-border bg-card p-3 sm:p-4"
     >
       <div className="flex gap-2">
         <textarea
@@ -70,7 +70,7 @@ export function ChatInput({
           {sending ? "…" : "Send"}
         </Button>
       </div>
-      <p className="mt-1.5 text-xs text-muted-foreground">
+      <p className="mt-1.5 hidden text-xs text-muted-foreground sm:block">
         Enter to send · Shift+Enter for new line
       </p>
     </form>

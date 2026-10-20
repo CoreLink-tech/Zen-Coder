@@ -5,10 +5,21 @@ import { getPlatformCounts, getUsageOverview } from "@/lib/admin/queries";
 
 export default async function AdminHomePage() {
   await requireAdmin();
-  const [counts, usage] = await Promise.all([
-    getPlatformCounts(),
-    getUsageOverview(),
-  ]);
+
+  let counts = { users: 0, workflows: 0, tasks: 0 };
+  let usage = {
+    tasks: { total: 0, failed: 0, completed: 0 },
+    executions: { total: 0, failed: 0, succeeded: 0 },
+    credits: { totalBalance: 0, accounts: 0 },
+  };
+
+  try {
+    const [c, u] = await Promise.all([getPlatformCounts(), getUsageOverview()]);
+    counts = c;
+    usage = u;
+  } catch (e) {
+    console.error("admin overview", e);
+  }
 
   return (
     <>
@@ -16,17 +27,17 @@ export default async function AdminHomePage() {
         title="Admin"
         description="Platform overview — restricted to admin role"
       />
-      <div className="flex-1 space-y-6 overflow-auto p-6">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <div className="min-h-0 flex-1 space-y-6 overflow-auto p-4 sm:p-6">
+        <div className="grid gap-3 sm:grid-cols-3">
           <Stat label="Users" value={counts.users} />
           <Stat label="Workflows" value={counts.workflows} />
-          <Stat label="Agent tasks" value={counts.tasks} />
+          <Stat label="Tasks" value={counts.tasks} />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="text-sm font-semibold">Coding tasks</h2>
-            <dl className="mt-2 space-y-1 text-sm">
+            <h2 className="text-sm font-semibold">Agent tasks</h2>
+            <dl className="mt-3 space-y-1 text-sm">
               <Row k="Total" v={usage.tasks.total} />
               <Row k="Completed" v={usage.tasks.completed} />
               <Row k="Failed" v={usage.tasks.failed} />
@@ -34,7 +45,7 @@ export default async function AdminHomePage() {
           </div>
           <div className="rounded-lg border border-border bg-card p-4">
             <h2 className="text-sm font-semibold">Workflow executions</h2>
-            <dl className="mt-2 space-y-1 text-sm">
+            <dl className="mt-3 space-y-1 text-sm">
               <Row k="Total" v={usage.executions.total} />
               <Row k="Succeeded" v={usage.executions.succeeded} />
               <Row k="Failed" v={usage.executions.failed} />

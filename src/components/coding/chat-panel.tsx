@@ -20,68 +20,62 @@ interface ChatPanelProps {
 
 export function ChatPanel({ conversationId, initialMessages }: ChatPanelProps) {
   const router = useRouter();
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const [optimisticUser, setOptimisticUser] = useState<string | null>(null);
 
-  async function handleSend(content: string) {
+  function handleSend(text: string) {
+    if (!text.trim() || pending) return;
     setError(null);
-    setOptimisticUser(content);
 
-    // Optimistic user bubble
-    const tempId = `temp-${Date.now()}`;
-    setMessages((prev) => [
-      ...prev,
-      { id: tempId, role: "user", content },
-    ]);
+    const optimistic: Message = {
+      id: `tmp-${Date.now()}`,
+      role: "user",
+      content: text,
+    };
+    setMessages((prev) => [...prev, optimistic]);
 
     startTransition(async () => {
-      const result = await sendCodingMessage(conversationId, content);
-
-      setOptimisticUser(null);
-
-      if (!result.success) {
-        setError(result.error ?? "Something went wrong");
-        // Remove optimistic message on failure
-        setMessages((prev) => prev.filter((m) => m.id !== tempId));
-        return;
-      }
-
-      // If this created a new conversation, navigate to it
-      if (!conversationId && result.conversationId) {
-        router.push(`/coding/${result.conversationId}`);
+      try {
+        const result = await sendCodingMessage(conversationId, text);
+        if (!result.success) {
+          setError(result.error ?? "Message failed");
+          setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          return;
+        }
+        if (result.conversationId && result.conversationId !== conversationId) {
+          router.push(`/coding/${result.conversationId}`);
+          router.refresh();
+          return;
+        }
+        if (result.assistantMessage) {
+          setMessages((prev) => [
+            ...prev.filter((m) => m.id !== optimistic.id),
+            {
+              id: `u-${Date.now()}`,
+              role: "user",
+              content: text,
+            },
+            {
+              id: `a-${Date.now()}`,
+              role: "assistant",
+              content: result.assistantMessage!,
+            },
+          ]);
+        }
         router.refresh();
-        return;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Something went wrong");
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       }
-
-      // Append assistant reply
-      if (result.assistantMessage) {
-        setMessages((prev) => [
-          ...prev.filter((m) => m.id !== tempId),
-          { id: `user-${Date.now()}`, role: "user", content },
-          {
-            id: `asst-${Date.now()}`,
-            role: "assistant",
-            content: result.assistantMessage!,
-          },
-        ]);
-      }
-
-      router.refresh();
     });
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <MessageList
-        messages={messages}
-        streamingContent={
-          pending && optimisticUser ? "Thinking…" : undefined
-        }
-      />
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <MessageList messages={messages} />
       {error && (
-        <div className="border-t border-destructive/30 bg-destructive/5 px-4 py-2 text-sm text-destructive">
+        <div className="border-t border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
           {error}
         </div>
       )}

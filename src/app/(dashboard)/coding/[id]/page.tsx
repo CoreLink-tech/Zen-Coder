@@ -15,11 +15,20 @@ interface PageProps {
 
 export default async function CodingConversationPage({ params }: PageProps) {
   const { id } = await params;
-  const [conversation, conversations, proposals] = await Promise.all([
-    getCodingConversation(id),
-    listCodingConversations(),
-    listPendingChanges(id),
-  ]);
+
+  let conversation = null;
+  let conversations: Awaited<ReturnType<typeof listCodingConversations>> = [];
+  let proposals: Awaited<ReturnType<typeof listPendingChanges>> = [];
+
+  try {
+    [conversation, conversations, proposals] = await Promise.all([
+      getCodingConversation(id),
+      listCodingConversations(),
+      listPendingChanges(id).catch(() => []),
+    ]);
+  } catch (e) {
+    console.error("coding conversation page", e);
+  }
 
   if (!conversation) {
     notFound();
@@ -38,9 +47,9 @@ export default async function CodingConversationPage({ params }: PageProps) {
         title={conversation.title || "Conversation"}
         description="AI coding agent"
       />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <ConversationList conversations={conversations} activeId={id} />
-        <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <PendingChanges
             proposals={proposals.map((p) => ({
               id: p.id,
