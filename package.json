@@ -24,7 +24,6 @@
     "next-auth": "5.0.0-beta.32",
     "octokit": "^5.0.0",
     "openai": "^6.0.0",
-    "playwright": "^1.55.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "zod": "^3.25.76",
@@ -41,5 +40,8 @@
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.55.0"
   }
 }
