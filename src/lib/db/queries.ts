@@ -41,13 +41,18 @@ export async function getUserByEmail(
 }
 
 export async function createUser(data: NewUser): Promise<User> {
-  const [user] = await db.insert(users).values(data).returning();
+  const id = data.id ?? crypto.randomUUID();
+  await db.insert(users).values({ ...data, id });
   // Every user gets a credit account with zero balance
   await db.insert(creditAccounts).values({
-    userId: user.id,
+    userId: id,
     balance: 0,
     reserved: 0,
   });
+  const user = await getUserById(id);
+  if (!user) {
+    throw new Error("User was inserted but could not be loaded");
+  }
   return user;
 }
 
