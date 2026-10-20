@@ -15,10 +15,10 @@ export function getStripe(): Stripe {
     throw new Error("STRIPE_SECRET_KEY is not configured");
   }
   if (!stripe) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      // Use a widely supported API version string
       apiVersion: "2024-06-20",
-    } as Stripe.StripeConfig);
+    } as any);
   }
   return stripe;
 }
