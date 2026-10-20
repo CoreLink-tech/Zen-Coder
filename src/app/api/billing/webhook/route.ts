@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStripe, getWebhookSecret, isStripeConfigured } from "@/lib/billing/stripe";
 import { handleStripeEvent } from "@/lib/billing/webhooks";
 
-export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   if (!isStripeConfigured()) {

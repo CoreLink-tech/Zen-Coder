@@ -1,7 +1,7 @@
 /**
  * Schedule helpers — interval minutes and simple 5-field cron.
  * Cron supports: minute hour day-of-month month day-of-week
- * Values: number | * | */n  (no lists/ranges in v1)
+ * Values: number, asterisk, or step form like star-slash-n (no lists/ranges in v1)
  */
 
 export function computeNextRunAt(

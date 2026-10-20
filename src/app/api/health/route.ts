@@ -8,7 +8,6 @@ import { isStripeConfigured } from "@/lib/billing/stripe";
 import { isGitHubAppConfigured } from "@/lib/github/config";
 import { listConfiguredProviders } from "@/lib/ai";
 
-export const dynamic = "force-dynamic";
 
 export async function GET() {
   const started = Date.now();
