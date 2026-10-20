@@ -35,7 +35,7 @@ Tables:
 4. Charges shared credits (`usage:job:<jobId>`)
 
 Protect with `CRON_SECRET` (Bearer or `?secret=`).
-`vercel.json` schedules this path every minute.
+`vercel.json` schedules this path once daily (02:00 UTC, Hobby-compatible).
 
 ### Overlap prevention
 

@@ -38,7 +38,7 @@ Local without Turso: leave Turso vars empty; Drizzle uses a local file DB if con
 1. Import the GitHub repo  
 2. Set all production env vars  
 3. Deploy  
-4. `vercel.json` already schedules `/api/cron/process-jobs` every minute  
+4. `vercel.json` already schedules `/api/cron/process-jobs` once daily (02:00 UTC, Hobby-compatible)  
 5. Stripe webhook → `https://<domain>/api/billing/webhook`  
 6. GitHub App callback → `https://<domain>/api/github/callback`  
 
