@@ -1,8 +1,8 @@
 /**
  * Database client for Turso / libSQL via Drizzle.
  *
- * In development without TURSO_DATABASE_URL we fall back to a local
- * file-based libSQL database so the app can boot and migrations can run.
+ * Production requires TURSO_DATABASE_URL (+ TURSO_AUTH_TOKEN).
+ * Local dev falls back to file:local.db when Turso is not set.
  */
 
 import { createClient, type Client } from "@libsql/client";
@@ -20,8 +20,14 @@ function createDbClient(): Client {
     });
   }
 
+  // Vercel / production must not use a local file DB (read-only / ephemeral FS)
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    throw new Error(
+      "TURSO_DATABASE_URL is not set. Configure Turso env vars in Vercel project settings."
+    );
+  }
+
   // Local development fallback (file-based)
-  // Data lives in ./local.db — never commit this file.
   return createClient({
     url: "file:local.db",
   });
