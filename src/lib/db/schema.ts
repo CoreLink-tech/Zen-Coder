@@ -808,6 +808,115 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
+
+// ---------------------------------------------------------------------------
+// Architecture plans (System Architect — approval before heavy implementation)
+// ---------------------------------------------------------------------------
+
+export const architecturePlans = sqliteTable(
+  "architecture_plans",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    conversationId: text("conversation_id").references(() => conversations.id, {
+      onDelete: "set null",
+    }),
+    taskId: text("task_id").references(() => agentTasks.id, {
+      onDelete: "set null",
+    }),
+    projectId: text("project_id").references(() => projects.id, {
+      onDelete: "set null",
+    }),
+    title: text("title").notNull(),
+    // lightweight | full
+    mode: text("mode", { enum: ["lightweight", "full"] })
+      .notNull()
+      .default("lightweight"),
+    // JSON structured plan body
+    content: text("content").notNull(),
+    status: text("status", {
+      enum: ["draft", "pending_approval", "approved", "rejected", "superseded"],
+    })
+      .notNull()
+      .default("pending_approval"),
+    userFeedback: text("user_feedback"),
+    model: text("model"),
+    provider: text("provider"),
+    creditsUsed: integer("credits_used"),
+    ...timestamps,
+  },
+  (t) => [
+    index("architecture_plans_user_id_idx").on(t.userId),
+    index("architecture_plans_conversation_id_idx").on(t.conversationId),
+    index("architecture_plans_status_idx").on(t.status),
+  ]
+);
+
+export const architecturePlansRelations = relations(
+  architecturePlans,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [architecturePlans.userId],
+      references: [users.id],
+    }),
+    conversation: one(conversations, {
+      fields: [architecturePlans.conversationId],
+      references: [conversations.id],
+    }),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Multi-Model Debugger runs (opt-in only after coding completion)
+// ---------------------------------------------------------------------------
+
+export const debuggerRuns = sqliteTable(
+  "debugger_runs",
+  {
+    id: id(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    conversationId: text("conversation_id").references(() => conversations.id, {
+      onDelete: "set null",
+    }),
+    taskId: text("task_id").references(() => agentTasks.id, {
+      onDelete: "set null",
+    }),
+    status: text("status", {
+      enum: [
+        "offered",
+        "declined",
+        "running",
+        "completed",
+        "failed",
+        "cancelled",
+      ],
+    })
+      .notNull()
+      .default("offered"),
+    // JSON findings
+    findings: text("findings"),
+    modelsUsed: text("models_used"), // JSON array
+    creditsUsed: integer("credits_used"),
+    error: text("error"),
+    ...timestamps,
+  },
+  (t) => [
+    index("debugger_runs_user_id_idx").on(t.userId),
+    index("debugger_runs_task_id_idx").on(t.taskId),
+  ]
+);
+
+export const debuggerRunsRelations = relations(debuggerRuns, ({ one }) => ({
+  user: one(users, {
+    fields: [debuggerRuns.userId],
+    references: [users.id],
+  }),
+}));
+
 // ---------------------------------------------------------------------------
 // Type exports
 // ---------------------------------------------------------------------------
@@ -828,5 +937,7 @@ export type WorkflowExecution = typeof workflowExecutions.$inferSelect;
 export type WorkflowSchedule = typeof workflowSchedules.$inferSelect;
 export type BackgroundJob = typeof backgroundJobs.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
+export type ArchitecturePlan = typeof architecturePlans.$inferSelect;
+export type DebuggerRun = typeof debuggerRuns.$inferSelect;
 export type CreditAccount = typeof creditAccounts.$inferSelect;
 export type CreditLedgerEntry = typeof creditLedgerEntries.$inferSelect;

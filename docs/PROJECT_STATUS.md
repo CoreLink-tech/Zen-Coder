@@ -1,41 +1,28 @@
 # Project Status — Zen-Coder
 
-## Current Phase
+**Last updated:** 2026-10-21  
+**Source of truth for implementation fidelity:** `docs/IMPLEMENTATION_AUDIT.md`
 
-**Phase 16 — Deployment readiness** (completed)
+## Reality (evidence-based)
 
-## All phases 0–16 complete
-
-| Phase | Summary |
-|-------|---------|
-| 0–1 | Foundation & shell |
-| 2 | Database schema |
-| 3 | Auth.js |
-| 4 | AI providers |
-| 5 | Agent engine + Coding UI |
-| 6 | GitHub read-only |
-| 7 | Approval-gated code changes |
-| 8 | Unified credit ledger |
-| 9 | Automation foundation |
-| 10 | HTTP + browser automation |
-| 11 | Schedules & jobs |
-| 12 | Integrations & webhooks |
-| 13 | Stripe subscriptions |
-| 14 | Admin & observability |
-| 15 | Security hardening |
-| 16 | Deployment docs & launch checklist |
-
-## Launch artifacts
-
-- `docs/DEPLOYMENT.md` — env matrix, Vercel, Turso
-- `docs/LAUNCH_CHECKLIST.md` — smoke tests
-- `README.md` — quick start
-- `.env.example` — consolidated
-
-## Optional future
-
-**Cybersecurity workspace** — scans, monitoring, reporting as a third workspace on the same credit balance (not built in 0–16).
+| Area | Status |
+|------|--------|
+| Auth (register/login/session) | Complete and verified in production |
+| Shared credit ledger | Implemented; welcome grant + usage deduct |
+| Coding chat + agent engine | Partial — needs AI provider keys; Architect gate added |
+| System Architect | Implemented (pending_approval gate) — needs AI keys to generate |
+| Multi-Model Debugger | Implemented (post-completion opt-in) — needs AI keys |
+| Automation workflows | Partial — executor exists; browser limited on serverless |
+| GitHub App integration | Implemented in code; **blocked** without App credentials |
+| Stripe billing | Implemented in code; **blocked** without price IDs / webhook |
+| Admin | Partial — requires `role=admin` |
+| Automated tests | Not implemented |
+| Production build | Passes with TS/ESLint ignored (technical debt) |
 
 ## Branch
 
-- `main`
+- `main` (deployed to Vercel)
+
+## Required configuration for full journeys
+
+See `.env.example` and `docs/IMPLEMENTATION_AUDIT.md` § External configuration.

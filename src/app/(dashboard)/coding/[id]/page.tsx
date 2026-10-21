@@ -8,6 +8,7 @@ import {
   listCodingConversations,
 } from "@/lib/agent/coding-actions";
 import { listPendingChanges } from "@/lib/github/changes";
+import { loadArchitecturePlan } from "@/lib/architect/actions";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -19,12 +20,14 @@ export default async function CodingConversationPage({ params }: PageProps) {
   let conversation = null;
   let conversations: Awaited<ReturnType<typeof listCodingConversations>> = [];
   let proposals: Awaited<ReturnType<typeof listPendingChanges>> = [];
+  let plan: Awaited<ReturnType<typeof loadArchitecturePlan>> = null;
 
   try {
-    [conversation, conversations, proposals] = await Promise.all([
+    [conversation, conversations, proposals, plan] = await Promise.all([
       getCodingConversation(id),
       listCodingConversations(),
       listPendingChanges(id).catch(() => []),
+      loadArchitecturePlan(id).catch(() => null),
     ]);
   } catch (e) {
     console.error("coding conversation page", e);
@@ -61,7 +64,20 @@ export default async function CodingConversationPage({ params }: PageProps) {
               createdAt: p.createdAt,
             }))}
           />
-          <ChatPanel conversationId={id} initialMessages={messages} />
+          <ChatPanel
+            conversationId={id}
+            initialMessages={messages}
+            initialPlan={
+              plan
+                ? {
+                    planId: plan.id,
+                    mode: plan.mode,
+                    content: plan.content,
+                    status: plan.status,
+                  }
+                : null
+            }
+          />
         </div>
       </div>
     </>

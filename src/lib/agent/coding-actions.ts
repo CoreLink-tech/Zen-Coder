@@ -48,6 +48,19 @@ export type SendMessageResult = {
   usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
   estimatedCredits?: number | null;
   error?: string;
+  /** Architecture plan awaiting approval */
+  architecturePlan?: {
+    planId: string;
+    mode: string;
+    content: string;
+    status: string;
+  };
+  /** Post-completion debugger offer (opt-in only) */
+  debuggerOffer?: {
+    runId: string;
+    message: string;
+  };
+  taskStatus?: string;
 };
 
 export async function sendCodingMessage(
@@ -119,6 +132,90 @@ export async function sendCodingMessage(
     })
     .returning();
 
+  // System Architect gate (server-enforced for substantial tasks)
+  const {
+    needsArchitectureGate,
+    isImplementationAllowed,
+    generateArchitecturePlan,
+  } = await import("@/lib/architect");
+  if (needsArchitectureGate(trimmed)) {
+    const gate = await isImplementationAllowed(user.id, convId, trimmed);
+    if (!gate.allowed) {
+      if (!gate.planId) {
+        try {
+          const plan = await generateArchitecturePlan({
+            userId: user.id,
+            conversationId: convId,
+            taskId: task.id,
+            userMessage: trimmed,
+            model,
+          });
+          await db
+            .update(agentTasks)
+            .set({
+              status: "awaiting_approval",
+              plan: plan.content,
+              updatedAt: new Date(),
+            })
+            .where(eq(agentTasks.id, task.id));
+          await addMessage(convId, user.id, {
+            role: "assistant",
+            content:
+              "I've prepared an architecture plan. Please approve or reject it before implementation continues.",
+            metadata: JSON.stringify({ architecturePlanId: plan.planId }),
+          });
+          return {
+            success: true,
+            conversationId: convId,
+            assistantMessage:
+              "I've prepared an architecture plan. Please approve or reject it before implementation continues.",
+            architecturePlan: {
+              planId: plan.planId,
+              mode: plan.mode,
+              content: plan.content,
+              status: plan.status,
+            },
+            taskStatus: "awaiting_approval",
+          };
+        } catch (e) {
+          await db
+            .update(agentTasks)
+            .set({
+              status: "failed",
+              error: e instanceof Error ? e.message : "Planning failed",
+              updatedAt: new Date(),
+            })
+            .where(eq(agentTasks.id, task.id));
+          return {
+            success: false,
+            conversationId: convId,
+            error:
+              e instanceof Error
+                ? e.message
+                : "System Architect failed. Check AI provider configuration.",
+          };
+        }
+      }
+      const { getLatestPlanForConversation } = await import("@/lib/architect");
+      const existingPlan = await getLatestPlanForConversation(user.id, convId);
+      return {
+        success: true,
+        conversationId: convId,
+        assistantMessage: gate.reason,
+        architecturePlan: existingPlan
+          ? {
+              planId: existingPlan.id,
+              mode: existingPlan.mode,
+              content: existingPlan.content,
+              status: existingPlan.status,
+            }
+          : undefined,
+        taskStatus: "awaiting_approval",
+        error: gate.reason,
+      };
+    }
+  }
+
   // Run agent
   const result = await runAgent({
     userId: user.id,
@@ -182,17 +279,36 @@ export async function sendCodingMessage(
     }
   }
 
-  // Update task
+  const taskStatus = result.status === "completed" ? "completed" : "failed";
   await db
     .update(agentTasks)
     .set({
-      status: result.status === "completed" ? "completed" : "failed",
+      status: taskStatus,
       result: result.finalContent,
       error: result.error,
       actualCredits: chargedCredits ?? undefined,
       updatedAt: new Date(),
     })
     .where(eq(agentTasks.id, task.id));
+
+  let debuggerOffer: SendMessageResult["debuggerOffer"];
+  if (taskStatus === "completed" && result.finalContent) {
+    try {
+      const { offerDebugger } = await import("@/lib/debugger");
+      const offer = await offerDebugger({
+        userId: user.id,
+        conversationId: convId,
+        taskId: task.id,
+      });
+      debuggerOffer = {
+        runId: offer.id,
+        message:
+          "Your coding task is complete. Would you like to run the Multi-Model Debugger to independently inspect the changes, investigate potential defects, and verify possible fixes?",
+      };
+    } catch {
+      // non-fatal
+    }
+  }
 
   // Touch conversation updatedAt
   await db
@@ -215,5 +331,7 @@ export async function sendCodingMessage(
     usage: result.usage,
     estimatedCredits: chargedCredits,
     error: result.error,
+    debuggerOffer,
+    taskStatus,
   };
 }
