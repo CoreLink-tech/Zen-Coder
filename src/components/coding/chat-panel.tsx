@@ -116,7 +116,7 @@ export function ChatPanel({
         />
       )}
       {error && (
-        <div className="border-t border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+        <div role="alert" className="border-t border-destructive/25 bg-destructive-soft px-4 py-2.5 text-sm text-destructive">
           {error}
         </div>
       )}

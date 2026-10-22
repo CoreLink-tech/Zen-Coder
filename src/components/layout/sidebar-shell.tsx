@@ -23,13 +23,13 @@ export function SidebarShell({
           type="button"
           aria-label="Open menu"
           onClick={() => setOpen(true)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground hover:bg-accent"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border-strong text-foreground hover:bg-accent"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <span className="font-semibold tracking-tight">Zen-Coder</span>
+        <span className="text-section tracking-tight">Zen-Coder</span>
         <div className="ml-auto">{creditSlot}</div>
       </div>
 
@@ -39,10 +39,10 @@ export function SidebarShell({
           <button
             type="button"
             aria-label="Close menu"
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-[min(18rem,85vw)] flex-col border-r border-border bg-card shadow-xl">
+          <aside className="absolute inset-y-0 left-0 flex w-[min(18rem,85vw)] flex-col border-r border-border bg-card shadow-overlay">
             <Sidebar onNavigate={() => setOpen(false)} />
             <div className="border-t border-border p-3">{creditSlot}</div>
           </aside>

@@ -42,8 +42,8 @@ export function ConversationList({
 
   const list = (
     <div className="flex h-full w-full flex-col bg-card/50">
-      <div className="flex items-center justify-between border-b border-border p-3">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
+        <span className="text-label">
           Conversations
         </span>
         <Button
@@ -58,7 +58,7 @@ export function ConversationList({
       </div>
       <div className="flex-1 overflow-y-auto p-2">
         {conversations.length === 0 ? (
-          <p className="px-2 py-4 text-xs text-muted-foreground">
+          <p className="px-2 py-4 text-xs leading-relaxed text-muted-foreground">
             No conversations yet. Tap New to start.
           </p>
         ) : (
@@ -72,7 +72,7 @@ export function ConversationList({
                     onClick={() => setOpen(false)}
                     className={`block truncate rounded-md px-2.5 py-2 text-sm transition-colors ${
                       isActive
-                        ? "bg-primary/10 font-medium text-primary"
+                        ? "bg-primary-soft font-medium text-primary"
                         : "text-muted-foreground hover:bg-accent hover:text-foreground"
                     }`}
                   >
@@ -114,7 +114,7 @@ export function ConversationList({
         <div className="fixed inset-0 z-40 md:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
             aria-label="Close chats"
             onClick={() => setOpen(false)}
           />

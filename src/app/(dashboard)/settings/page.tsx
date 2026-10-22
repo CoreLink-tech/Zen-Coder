@@ -1,4 +1,5 @@
 import { Header } from "@/components/layout/header";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
 import { getGitHubStatus } from "@/lib/github/actions";
 import { GitHubSettings } from "@/components/github/github-settings";
@@ -55,9 +56,12 @@ export default async function SettingsPage() {
       />
       <div className="flex min-h-0 flex-1 flex-col overflow-auto p-4 sm:p-6">
         <div className="mx-auto grid w-full max-w-2xl gap-4 sm:gap-6">
-          <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
-            <h2 className="text-sm font-semibold">Account</h2>
-            <dl className="mt-3 space-y-2 text-sm">
+          <Card>
+            <CardHeader>
+              <CardTitle>Account</CardTitle>
+            </CardHeader>
+            <CardContent>
+            <dl className="space-y-2.5 text-sm">
               <div className="flex flex-wrap justify-between gap-2">
                 <dt className="text-muted-foreground">Email</dt>
                 <dd className="break-all">{user.email}</dd>
@@ -71,44 +75,48 @@ export default async function SettingsPage() {
                 <dd className="capitalize">{user.status}</dd>
               </div>
             </dl>
-          </section>
+            </CardContent>
+          </Card>
 
-          <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
-            <h2 className="text-sm font-semibold">Credits</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Shared balance for Coding and Automation (
-              {CREDIT_CONFIG.creditsPerUsd} credits / USD).
-            </p>
-            <div className="mt-3 grid grid-cols-3 gap-3 text-center text-sm">
-              <div className="rounded-md bg-muted/50 p-3">
-                <div className="text-xs text-muted-foreground">Balance</div>
-                <div className="mt-1 text-lg font-semibold">
+          <Card>
+            <CardHeader>
+              <CardTitle>Credits</CardTitle>
+              <CardDescription>
+                Shared balance for Coding and Automation (
+                {CREDIT_CONFIG.creditsPerUsd} credits / USD).
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+            <div className="grid grid-cols-3 gap-3 text-center text-sm">
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="text-label">Balance</div>
+                <div className="mt-1 text-lg font-semibold tabular-nums">
                   {summary.balance.toLocaleString()}
                 </div>
               </div>
-              <div className="rounded-md bg-muted/50 p-3">
-                <div className="text-xs text-muted-foreground">Reserved</div>
-                <div className="mt-1 text-lg font-semibold">
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="text-label">Reserved</div>
+                <div className="mt-1 text-lg font-semibold tabular-nums">
                   {summary.reserved.toLocaleString()}
                 </div>
               </div>
-              <div className="rounded-md bg-muted/50 p-3">
-                <div className="text-xs text-muted-foreground">Available</div>
-                <div className="mt-1 text-lg font-semibold">
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="text-label">Available</div>
+                <div className="mt-1 text-lg font-semibold tabular-nums">
                   {summary.available.toLocaleString()}
                 </div>
               </div>
             </div>
             {entries.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="mt-5">
+                <h3 className="text-label">
                   Recent activity
                 </h3>
-                <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto text-sm">
+                <ul className="mt-2 max-h-48 divide-y divide-border overflow-y-auto text-sm">
                   {entries.map((e) => (
                     <li
                       key={e.id}
-                      className="flex items-center justify-between gap-2 border-b border-border/60 py-1.5 last:border-0"
+                      className="flex items-center justify-between gap-2 py-2"
                     >
                       <span className="min-w-0 truncate text-muted-foreground">
                         {e.type}
@@ -117,7 +125,7 @@ export default async function SettingsPage() {
                       </span>
                       <span
                         className={
-                          e.amount >= 0 ? "text-success" : "text-destructive"
+                          `font-medium tabular-nums ${e.amount >= 0 ? "text-success" : "text-destructive"}`
                         }
                       >
                         {e.amount >= 0 ? "+" : ""}
@@ -128,14 +136,18 @@ export default async function SettingsPage() {
                 </ul>
               </div>
             )}
-          </section>
+            </CardContent>
+          </Card>
 
-          <section className="rounded-lg border border-border bg-card p-4 sm:p-5">
-            <h2 className="text-sm font-semibold">AI Providers & Models</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Platform-managed keys. Configured providers:
-            </p>
-            <ul className="mt-2 space-y-1 text-sm">
+          <Card>
+            <CardHeader>
+              <CardTitle>AI providers and models</CardTitle>
+              <CardDescription>
+                Platform-managed keys. Configured providers:
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+            <ul className="space-y-1.5 text-sm">
               {configuredProviders.length === 0 ? (
                 <li className="text-muted-foreground">
                   None configured — set API keys in Vercel env
@@ -152,10 +164,11 @@ export default async function SettingsPage() {
                 ))
               )}
             </ul>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs text-muted-foreground">
               Default model: {MODEL_REGISTRY[0]?.id ?? "—"}
             </p>
-          </section>
+            </CardContent>
+          </Card>
 
           <PlansPanel
             plans={PLANS.map((p) => ({

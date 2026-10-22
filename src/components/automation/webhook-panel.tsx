@@ -7,6 +7,7 @@ import {
   disableWorkflowWebhook,
 } from "@/lib/automation/actions";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function WebhookPanel({
   workflowId,
@@ -42,48 +43,41 @@ export function WebhookPanel({
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <h3 className="text-sm font-semibold">Inbound webhook</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
-        POST to trigger a run. Send header{" "}
-        <code className="text-[10px]">X-Zen-Webhook-Secret</code>.
-      </p>
-      <p className="mt-1 font-mono text-xs text-muted-foreground">
-        /api/webhooks/workflows/{workflowId}
-      </p>
-
-      {secret && (
-        <p className="mt-2 break-all rounded bg-muted/50 p-2 font-mono text-xs">
-          Secret (shown once): {secret}
+    <Card>
+      <CardHeader>
+        <CardTitle>Inbound webhook</CardTitle>
+        <CardDescription>
+          POST to trigger a run. Send header{" "}
+          <code className="font-mono text-xs">X-Zen-Webhook-Secret</code>.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="break-all rounded-md border border-border bg-muted/40 px-3 py-2 font-mono text-xs text-muted-foreground">
+          /api/webhooks/workflows/{workflowId}
         </p>
-      )}
-      {error && (
-        <p className="mt-2 text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      )}
 
-      <div className="mt-3 flex gap-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={pending}
-          onClick={handleEnable}
-        >
-          {hasSecret ? "Rotate secret" : "Enable webhook"}
-        </Button>
-        {hasSecret && (
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            disabled={pending}
-            onClick={handleDisable}
-          >
-            Disable
-          </Button>
+        {secret && (
+          <p role="status" className="break-all rounded-md border border-warning/30 bg-warning-soft px-3 py-2 font-mono text-xs text-foreground">
+            Secret (shown once): {secret}
+          </p>
         )}
-      </div>
-    </section>
+        {error && (
+          <p role="alert" className="rounded-md border border-destructive/25 bg-destructive-soft px-3 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" size="sm" disabled={pending} onClick={handleEnable}>
+            {hasSecret ? "Rotate secret" : "Enable webhook"}
+          </Button>
+          {hasSecret && (
+            <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={handleDisable}>
+              Disable
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

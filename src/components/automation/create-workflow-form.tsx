@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createWorkflow } from "@/lib/automation/actions";
 import { Button } from "@/components/ui/button";
+import { Input, Label, Textarea } from "@/components/ui/input";
 
 interface ToolOption {
   id: string;
@@ -69,59 +70,51 @@ export function CreateWorkflowForm({ tools }: { tools: ToolOption[] }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-4 p-6">
-      <div>
-        <label className="text-sm font-medium" htmlFor="name">
-          Name
-        </label>
-        <input
+    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-5 p-4 sm:p-6">
+      <div className="space-y-1.5">
+        <Label htmlFor="name">Name</Label>
+        <Input
           id="name"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mt-1.5 w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
           placeholder="Website uptime check"
         />
       </div>
 
-      <div>
-        <label className="text-sm font-medium" htmlFor="description">
-          Description
-        </label>
-        <input
+      <div className="space-y-1.5">
+        <Label htmlFor="description">Description</Label>
+        <Input
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="mt-1.5 w-full rounded-md border border-border bg-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
           placeholder="Optional"
         />
       </div>
 
-      <div>
-        <label className="text-sm font-medium" htmlFor="definition">
-          Workflow definition (JSON)
-        </label>
-        <p className="mt-1 text-xs text-muted-foreground">
+      <div className="space-y-1.5">
+        <Label htmlFor="definition">Workflow definition (JSON)</Label>
+        <p className="text-xs text-muted-foreground">
           Available tools:{" "}
           {tools.map((t) => t.id).join(", ") || "none"}
         </p>
-        <textarea
+        <Textarea
           id="definition"
           value={definitionJson}
           onChange={(e) => setDefinitionJson(e.target.value)}
           rows={18}
-          className="mt-1.5 w-full rounded-md border border-border bg-card px-3 py-2 font-mono text-xs outline-none focus:ring-2 focus:ring-primary"
+          className="font-mono text-xs leading-relaxed"
           spellCheck={false}
         />
       </div>
 
       {error && (
-        <p className="text-sm text-destructive" role="alert">
+        <p role="alert" className="rounded-md border border-destructive/25 bg-destructive-soft px-3 py-2 text-sm text-destructive">
           {error}
         </p>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2 pt-1">
         <Button type="submit" disabled={pending}>
           {pending ? "Creating…" : "Create workflow"}
         </Button>

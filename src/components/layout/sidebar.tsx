@@ -39,14 +39,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              className={`rounded-md px-3 py-2.5 text-sm transition-colors ${
+              className={`rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive
-                  ? "bg-primary/10 font-medium text-primary"
+                  ? "bg-primary-soft font-medium text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
               }`}
             >
               <div className="font-medium">{item.label}</div>
-              <div className="mt-0.5 text-xs opacity-70">{item.description}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground/80">{item.description}</div>
             </Link>
           );
         })}

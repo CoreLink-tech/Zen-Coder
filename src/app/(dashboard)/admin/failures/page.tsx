@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { requireAdmin } from "@/lib/admin/guard";
 import { listRecentFailures } from "@/lib/admin/queries";
 
@@ -9,62 +11,47 @@ export default async function AdminFailuresPage() {
 
   return (
     <>
-      <Header
-        title="Admin · Failures"
-        description="Recent failed tasks and workflow runs"
-      />
-      <div className="flex-1 space-y-8 overflow-auto p-6">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/admin" className="text-primary underline">
-            ← Admin home
-          </Link>
-        </p>
+      <Header title="Admin · Failures" description="Recent failed tasks and workflow runs" />
+      <div className="flex-1 space-y-8 overflow-auto p-4 sm:p-6">
+        <Link href="/admin" className="inline-flex text-sm font-medium text-primary hover:underline">
+          ← Admin home
+        </Link>
 
-        <section>
-          <h2 className="text-sm font-semibold">Agent tasks</h2>
-          <ul className="mt-2 space-y-2 text-sm">
-            {tasks.length === 0 ? (
-              <li className="text-muted-foreground">No failed tasks</li>
-            ) : (
-              tasks.map((t) => (
-                <li
-                  key={t.id}
-                  className="rounded-md border border-border px-3 py-2"
-                >
-                  <div className="font-medium">{t.title || t.id.slice(0, 8)}</div>
-                  <div className="text-xs text-destructive">
-                    {t.error || "Unknown error"}
-                  </div>
+        <section className="space-y-3">
+          <h2 className="text-section text-foreground">Agent tasks</h2>
+          {tasks.length === 0 ? (
+            <EmptyState title="No failed tasks" description="Agent tasks that fail will be listed here." />
+          ) : (
+            <Card className="divide-y divide-border overflow-hidden">
+              {tasks.map((t) => (
+                <div key={t.id} className="space-y-1 px-4 py-3 text-sm">
+                  <div className="font-medium text-foreground">{t.title || t.id.slice(0, 8)}</div>
+                  <div className="break-words text-xs text-destructive">{t.error || "Unknown error"}</div>
                   <div className="text-xs text-muted-foreground">
                     user {t.userId.slice(0, 8)}… · {t.workspace}
                   </div>
-                </li>
-              ))
-            )}
-          </ul>
+                </div>
+              ))}
+            </Card>
+          )}
         </section>
 
-        <section>
-          <h2 className="text-sm font-semibold">Workflow executions</h2>
-          <ul className="mt-2 space-y-2 text-sm">
-            {executions.length === 0 ? (
-              <li className="text-muted-foreground">No failed executions</li>
-            ) : (
-              executions.map((e) => (
-                <li
-                  key={e.id}
-                  className="rounded-md border border-border px-3 py-2"
-                >
-                  <div className="font-medium">
+        <section className="space-y-3">
+          <h2 className="text-section text-foreground">Workflow executions</h2>
+          {executions.length === 0 ? (
+            <EmptyState title="No failed executions" description="Workflow runs that fail will be listed here." />
+          ) : (
+            <Card className="divide-y divide-border overflow-hidden">
+              {executions.map((e) => (
+                <div key={e.id} className="space-y-1 px-4 py-3 text-sm">
+                  <div className="font-medium text-foreground">
                     {e.workflowId.slice(0, 8)}… · {e.trigger}
                   </div>
-                  <div className="text-xs text-destructive">
-                    {e.error || "Unknown error"}
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
+                  <div className="break-words text-xs text-destructive">{e.error || "Unknown error"}</div>
+                </div>
+              ))}
+            </Card>
+          )}
         </section>
       </div>
     </>

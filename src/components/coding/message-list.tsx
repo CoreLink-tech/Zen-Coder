@@ -17,8 +17,13 @@ export function MessageList({ messages, streamingContent }: MessageListProps) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto p-6 text-center sm:p-8">
         <div className="max-w-sm">
-          <h3 className="text-base font-semibold">Start a coding conversation</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-primary-soft text-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M8 9l-3 3 3 3M16 9l3 3-3 3M13.5 6.5l-3 11" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h3 className="text-title text-foreground">Start a coding conversation</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Ask about code, request changes, or describe a bug. Use{" "}
             <span className="font-medium text-foreground">New chat</span> to
             begin.
@@ -29,7 +34,7 @@ export function MessageList({ messages, streamingContent }: MessageListProps) {
   }
 
   return (
-    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3 sm:p-4">
+    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
       {messages.map((m) => (
         <MessageBubble key={m.id} role={m.role} content={m.content} />
       ))}
@@ -54,14 +59,14 @@ function MessageBubble({
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[92%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed sm:max-w-[80%] ${
+        className={`max-w-[92%] rounded-xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[80%] ${
           isUser
-            ? "bg-primary text-primary-foreground"
-            : "border border-border bg-card text-card-foreground"
-        } ${pending ? "opacity-80" : ""}`}
+            ? "rounded-br-sm bg-primary text-primary-foreground"
+            : "rounded-bl-sm border border-border bg-card text-card-foreground"
+        } ${pending ? "animate-pulse opacity-80" : ""}`}
       >
         {!isUser && (
-          <div className="mb-1 text-xs font-medium text-muted-foreground">
+          <div className="mb-1 text-label">
             Zen-Coder
           </div>
         )}

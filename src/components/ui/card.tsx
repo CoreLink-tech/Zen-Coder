@@ -7,7 +7,7 @@ export function Card({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`rounded-lg border border-border bg-card text-card-foreground shadow-sm ${className}`}
+      className={`rounded-xl border border-border bg-card text-card-foreground shadow-card ${className}`}
       {...props}
     >
       {children}
@@ -21,7 +21,7 @@ export function CardHeader({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`flex flex-col gap-1.5 p-5 ${className}`} {...props}>
+    <div className={`flex flex-col gap-1 p-5 sm:p-6 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -33,7 +33,7 @@ export function CardTitle({
   ...props
 }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={`text-base font-semibold leading-none ${className}`} {...props}>
+    <h3 className={`text-section text-foreground ${className}`} {...props}>
       {children}
     </h3>
   );
@@ -45,7 +45,7 @@ export function CardDescription({
   ...props
 }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={`text-sm text-muted-foreground ${className}`} {...props}>
+    <p className={`text-sm leading-relaxed text-muted-foreground ${className}`} {...props}>
       {children}
     </p>
   );
@@ -57,7 +57,7 @@ export function CardContent({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`p-5 pt-0 ${className}`} {...props}>
+    <div className={`p-5 pt-0 sm:p-6 sm:pt-0 ${className}`} {...props}>
       {children}
     </div>
   );

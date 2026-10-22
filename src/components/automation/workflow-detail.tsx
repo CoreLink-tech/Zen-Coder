@@ -7,7 +7,10 @@ import {
   setWorkflowStatus,
   deleteWorkflow,
 } from "@/lib/automation/actions";
+import { Badge, statusTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Execution {
   id: string;
@@ -88,105 +91,100 @@ export function WorkflowDetail({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">{workflow.name}</h2>
+        <div className="min-w-0">
+          <h2 className="text-title text-foreground">{workflow.name}</h2>
           {workflow.description && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {workflow.description}
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{workflow.description}</p>
           )}
-          <p className="mt-1 text-xs capitalize text-muted-foreground">
-            Status: {workflow.status}
-          </p>
+          <div className="mt-2">
+            <Badge tone={statusTone(workflow.status)} className="capitalize">
+              {workflow.status}
+            </Badge>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" size="sm" disabled={pending} onClick={handleRun}>
             {pending ? "Running…" : "Run now"}
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            disabled={pending}
-            onClick={() => handleStatus("paused")}
-          >
+          <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={() => handleStatus("paused")}>
             Pause
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            disabled={pending}
-            onClick={() => handleStatus("active")}
-          >
+          <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={() => handleStatus("active")}>
             Activate
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={pending}
-            onClick={handleDelete}
-          >
+          <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={handleDelete}>
             Delete
           </Button>
         </div>
       </div>
 
-      {message && <p className="text-sm text-success">{message}</p>}
+      {message && (
+        <p role="status" className="rounded-md border border-success/25 bg-success-soft px-3 py-2 text-sm text-success">
+          {message}
+        </p>
+      )}
       {error && (
-        <p className="text-sm text-destructive" role="alert">
+        <p role="alert" className="rounded-md border border-destructive/25 bg-destructive-soft px-3 py-2 text-sm text-destructive">
           {error}
         </p>
       )}
 
       {current && (
-        <section className="rounded-lg border border-border bg-card p-4">
-          <h3 className="text-sm font-semibold">
-            Definition (v{current.version})
-          </h3>
-          <pre className="mt-2 max-h-64 overflow-auto rounded bg-muted/40 p-3 text-xs">
-            {(() => {
-              try {
-                return JSON.stringify(JSON.parse(current.definition), null, 2);
-              } catch {
-                return current.definition;
-              }
-            })()}
-          </pre>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Definition (v{current.version})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="max-h-64 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs leading-relaxed">
+              {(() => {
+                try {
+                  return JSON.stringify(JSON.parse(current.definition), null, 2);
+                } catch {
+                  return current.definition;
+                }
+              })()}
+            </pre>
+          </CardContent>
+        </Card>
       )}
 
       {lastLogs && (
-        <section className="rounded-lg border border-border bg-card p-4">
-          <h3 className="text-sm font-semibold">Last run steps</h3>
-          <pre className="mt-2 max-h-64 overflow-auto rounded bg-muted/40 p-3 text-xs">
-            {lastLogs}
-          </pre>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Last run steps</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <pre className="max-h-64 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs leading-relaxed">
+              {lastLogs}
+            </pre>
+          </CardContent>
+        </Card>
       )}
 
-      <section className="rounded-lg border border-border bg-card p-4">
-        <h3 className="text-sm font-semibold">Execution history</h3>
-        {executions.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">No runs yet</p>
-        ) : (
-          <ul className="mt-2 space-y-2 text-sm">
-            {executions.map((ex) => (
-              <li
-                key={ex.id}
-                className="flex items-center justify-between border-b border-border/50 py-2"
-              >
-                <span className="capitalize">{ex.status}</span>
-                <span className="text-xs text-muted-foreground">
-                  {ex.trigger}
-                  {ex.error ? ` · ${ex.error}` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Execution history</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {executions.length === 0 ? (
+            <EmptyState title="No runs yet" description="Run the workflow to see its execution history here." />
+          ) : (
+            <ul className="divide-y divide-border text-sm">
+              {executions.map((ex) => (
+                <li key={ex.id} className="flex items-center justify-between gap-3 py-2.5">
+                  <Badge tone={statusTone(ex.status)} className="capitalize">
+                    {ex.status}
+                  </Badge>
+                  <span className="min-w-0 truncate text-xs text-muted-foreground">
+                    {ex.trigger}
+                    {ex.error ? ` · ${ex.error}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

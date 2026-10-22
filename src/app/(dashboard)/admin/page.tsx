@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/admin/guard";
 import { getPlatformCounts, getUsageOverview } from "@/lib/admin/queries";
 
@@ -34,66 +35,85 @@ export default async function AdminHomePage() {
           <Stat label="Tasks" value={counts.tasks} />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="text-sm font-semibold">Agent tasks</h2>
-            <dl className="mt-3 space-y-1 text-sm">
-              <Row k="Total" v={usage.tasks.total} />
-              <Row k="Completed" v={usage.tasks.completed} />
-              <Row k="Failed" v={usage.tasks.failed} />
-            </dl>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="text-sm font-semibold">Workflow executions</h2>
-            <dl className="mt-3 space-y-1 text-sm">
-              <Row k="Total" v={usage.executions.total} />
-              <Row k="Succeeded" v={usage.executions.succeeded} />
-              <Row k="Failed" v={usage.executions.failed} />
-            </dl>
-          </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Agent tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="divide-y divide-border text-sm">
+                <Row k="Total" v={usage.tasks.total} />
+                <Row k="Completed" v={usage.tasks.completed} />
+                <Row k="Failed" v={usage.tasks.failed} />
+              </dl>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Workflow executions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="divide-y divide-border text-sm">
+                <Row k="Total" v={usage.executions.total} />
+                <Row k="Succeeded" v={usage.executions.succeeded} />
+                <Row k="Failed" v={usage.executions.failed} />
+              </dl>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h2 className="text-sm font-semibold">Credits in circulation</h2>
-          <p className="mt-2 text-sm">
-            {usage.credits.totalBalance.toLocaleString()} total balance across{" "}
-            {usage.credits.accounts} accounts
-          </p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Credits in circulation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                {usage.credits.totalBalance.toLocaleString()}
+              </span>{" "}
+              total balance across {usage.credits.accounts} accounts
+            </p>
+          </CardContent>
+        </Card>
 
-        <nav className="flex flex-wrap gap-3 text-sm">
-          <Link className="text-primary underline" href="/admin/users">
-            Users
-          </Link>
-          <Link className="text-primary underline" href="/admin/usage">
-            Usage
-          </Link>
-          <Link className="text-primary underline" href="/admin/failures">
-            Failures
-          </Link>
-          <a className="text-primary underline" href="/api/health">
-            Health API
-          </a>
+        <nav aria-label="Admin sections" className="flex flex-wrap gap-2">
+          <AdminLink href="/admin/users">Users</AdminLink>
+          <AdminLink href="/admin/usage">Usage</AdminLink>
+          <AdminLink href="/admin/failures">Failures</AdminLink>
+          <AdminLink href="/api/health">Health API</AdminLink>
         </nav>
       </div>
     </>
   );
 }
 
+function AdminLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex h-8 items-center rounded-md border border-border-strong bg-card px-3 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-accent"
+    >
+      {children}
+    </Link>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
-    </div>
+    <Card className="p-5">
+      <div className="text-label">{label}</div>
+      <div className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-foreground">
+        {value.toLocaleString()}
+      </div>
+    </Card>
   );
 }
 
 function Row({ k, v }: { k: string; v: number }) {
   return (
-    <div className="flex justify-between">
+    <div className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
       <dt className="text-muted-foreground">{k}</dt>
-      <dd>{v}</dd>
+      <dd className="font-medium tabular-nums text-foreground">{v.toLocaleString()}</dd>
     </div>
   );
 }
