@@ -44,6 +44,13 @@
   --warning: #b45309;
   --warning-soft: #fffbeb;
 
+  --sage: #6b7f5e;
+  --sage-soft: #eef2e8;
+  --clay: #b5653f;
+  --clay-soft: #f7ece5;
+  --stone: #8a8175;
+  --stone-soft: #f2efea;
+
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05);
   --shadow-overlay: 0 16px 40px -12px rgb(15 23 42 / 0.28), 0 2px 6px rgb(15 23 42 / 0.08);
 }
@@ -71,6 +78,12 @@
   --color-success-soft: var(--success-soft);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
+  --color-sage: var(--sage);
+  --color-sage-soft: var(--sage-soft);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-stone: var(--stone);
+  --color-stone-soft: var(--stone-soft);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -102,6 +115,13 @@
     --success-soft: rgb(74 222 128 / 0.1);
     --warning: #fbbf24;
     --warning-soft: rgb(251 191 36 / 0.1);
+
+    --sage: #9fb38c;
+    --sage-soft: rgb(159 179 140 / 0.12);
+    --clay: #d88a63;
+    --clay-soft: rgb(216 138 99 / 0.12);
+    --stone: #a89d90;
+    --stone-soft: rgb(168 157 144 / 0.1);
 
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45);
     --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.4);
@@ -208,5 +228,52 @@
 
   .skeleton {
     @apply animate-pulse rounded-md bg-muted;
+  }
+}
+
+/*
+ * Dashboard motion. Subtle, one-shot entrances. Reduced-motion users get the
+ * global 0.01ms override above, so these stay static for them.
+ */
+@layer utilities {
+  @keyframes zc-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes zc-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes zc-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .animate-zc-fade-up {
+    animation: zc-fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-zc-fade-in {
+    animation: zc-fade-in 0.4s ease-out both;
+  }
+  .animate-zc-slide-in {
+    animation: zc-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
