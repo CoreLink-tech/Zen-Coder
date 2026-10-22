@@ -46,7 +46,7 @@ export function PlansPanel({
         return;
       }
       if (data.url) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       }
     } catch {
       setError("Network error");

@@ -92,11 +92,8 @@ export async function generateArchitecturePlan(input: {
   }
 
   const credits =
-    result.usage
-      ? estimateCredits(model, result.usage)
-      : mode === "full"
-        ? 50
-        : 15;
+    (result.usage ? estimateCredits(model, result.usage) : null) ??
+    (mode === "full" ? 50 : 15);
 
   if (credits > 0) {
     await deductUsage({

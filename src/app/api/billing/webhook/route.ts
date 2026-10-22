@@ -40,11 +40,8 @@ export async function POST(req: NextRequest) {
     const result = await handleStripeEvent(event);
     return NextResponse.json({ received: true, ...result });
   } catch (err) {
-    return NextResponse.json(
-      {
-        error: err instanceof Error ? err.message : "Handler failed",
-      },
-      { status: 500 }
-    );
+    // 500 makes Stripe retry the event; details stay in server logs
+    console.error("[billing.webhook] handler failed", event.type, event.id, err);
+    return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
 }

@@ -40,11 +40,12 @@ export function DebuggerOfferCard({
                   setError(r.error ?? "Debugger failed");
                   return;
                 }
+                const findings = (r as { findings?: unknown }).findings;
                 setDone("ran");
                 setResult(
-                  typeof r.findings === "string"
-                    ? r.findings
-                    : JSON.stringify(r.findings)
+                  typeof findings === "string"
+                    ? findings
+                    : JSON.stringify(findings ?? null)
                 );
               })
             }

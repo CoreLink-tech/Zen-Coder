@@ -114,11 +114,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Unknown kind" }, { status: 400 });
   } catch (err) {
-    return NextResponse.json(
-      {
-        error: err instanceof Error ? err.message : "Checkout failed",
-      },
-      { status: 500 }
-    );
+    console.error("[billing.checkout]", err);
+    return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
   }
 }

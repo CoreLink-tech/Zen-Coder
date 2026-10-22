@@ -29,7 +29,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
-    sessionsTable: sessions,
+    // The JWT strategy never reads this table. Auth.js types sessionToken as
+    // the primary key; the schema keeps a uuid id (no migration churn), so the
+    // cast only bridges that typing mismatch.
+    sessionsTable: sessions as never,
     verificationTokensTable: verificationTokens,
   }),
   session: {
@@ -88,8 +91,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role ?? "user";
-        token.status = (user as { status?: string }).status ?? "active";
+        token.role =
+          ((user as { role?: string }).role as "user" | "admin" | undefined) ??
+          "user";
+        token.status =
+          ((user as { status?: string }).status as
+            | "active"
+            | "suspended"
+            | "deleted"
+            | undefined) ?? "active";
       }
       return token;
     },

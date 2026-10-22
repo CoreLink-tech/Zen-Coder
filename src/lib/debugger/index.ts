@@ -122,9 +122,8 @@ ${input.context.changedFilesNote ?? "(none)"}`;
         temperature: 0.2,
         maxTokens: 2000,
       });
-      const credits = result.usage
-        ? estimateCredits(model, result.usage)
-        : 25;
+      const credits =
+        (result.usage ? estimateCredits(model, result.usage) : null) ?? 25;
       totalCredits += credits;
       reviews.push({ model, text: result.content, credits });
 

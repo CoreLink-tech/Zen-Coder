@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
-import { CreditBalance } from "./credit-balance";
 
 /**
  * Responsive shell: desktop fixed sidebar, mobile drawer.
