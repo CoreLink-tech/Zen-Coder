@@ -8,39 +8,33 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
+const base =
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap select-none transition-[background-color,border-color,color,box-shadow,opacity] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
+
 const variantClasses: Record<Variant, string> = {
-  primary:
-    "bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50",
+  primary: "bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover",
   secondary:
-    "border border-border bg-card hover:bg-accent disabled:opacity-50",
-  ghost: "hover:bg-accent disabled:opacity-50",
-  destructive:
-    "bg-destructive text-white hover:opacity-90 disabled:opacity-50",
+    "border border-border-strong bg-card text-foreground shadow-sm hover:bg-accent",
+  ghost: "text-muted-foreground hover:bg-accent hover:text-foreground",
+  destructive: "bg-destructive text-destructive-foreground shadow-sm hover:opacity-90",
 };
 
 const sizeClasses: Record<Size, string> = {
   sm: "h-8 px-3 text-xs",
   md: "h-9 px-4 text-sm",
-  lg: "h-10 px-5 text-sm",
+  lg: "h-11 px-6 text-sm sm:h-10",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    {
-      className = "",
-      variant = "primary",
-      size = "md",
-      disabled,
-      children,
-      ...props
-    },
+    { className = "", variant = "primary", size = "md", disabled, children, ...props },
     ref
   ) => {
     return (
       <button
         ref={ref}
         disabled={disabled}
-        className={`inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+        className={`${base} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
         {...props}
       >
         {children}
