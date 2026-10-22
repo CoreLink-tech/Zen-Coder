@@ -86,14 +86,18 @@ async function handleCheckoutCompleted(
 
     await upsertSubscriptionRecord({
       userId,
-      planId: planId as string,
+      planId,
       status: "active",
       stripeCustomerId: customerId ?? null,
       stripeSubscriptionId: subId ?? null,
       stripePriceId: session.metadata?.priceId ?? null,
     });
 
-    if (plan && plan.monthlyCredits > 0) {
+    if (!plan) {
+      return { handled: false, detail: `Unknown plan ${planId}` };
+    }
+
+    if (plan.monthlyCredits > 0) {
       try {
         await recordPurchase({
           userId,
@@ -139,7 +143,12 @@ async function handleInvoicePaid(invoice: Stripe.Invoice, eventId: string) {
     return { handled: false, detail: "Could not resolve user/plan for invoice" };
   }
 
-  // Skip the first invoice if already granted via checkout (idempotent op id uses invoice id)
+  // The first invoice of a new subscription is already granted by the
+  // checkout.session.completed handler; granting here too would double-credit.
+  if (invoice.billing_reason === "subscription_create") {
+    return { handled: true, detail: "Initial invoice credited at checkout" };
+  }
+
   const plan = getPlan(planId);
   if (!plan || plan.monthlyCredits <= 0) {
     return { handled: true, detail: "No monthly credits for plan" };

@@ -100,7 +100,6 @@ async function writeLedgerEntry(
     where: eq(creditLedgerEntries.operationId, params.operationId),
   });
   if (existing) {
-    const account = await getOrCreateAccount(params.userId);
     throw new IdempotentReplayError(existing);
   }
 

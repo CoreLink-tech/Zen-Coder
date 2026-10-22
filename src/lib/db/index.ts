@@ -20,6 +20,13 @@ function createDbClient(): Client {
     });
   }
 
+  // `next build` evaluates route modules to collect page data. No database is
+  // reached at that point, so use an in-memory client there only. Runtime
+  // production still refuses to start without Turso.
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return createClient({ url: "file::memory:" });
+  }
+
   // Vercel / production must not use a local file DB (read-only / ephemeral FS)
   if (process.env.VERCEL || process.env.NODE_ENV === "production") {
     throw new Error(

@@ -33,7 +33,6 @@ interface GitHubSettingsProps {
 
 export function GitHubSettings({
   configured,
-  installUrl,
   installations,
   repositories,
 }: GitHubSettingsProps) {

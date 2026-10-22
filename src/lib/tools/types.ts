@@ -33,7 +33,9 @@ export interface ToolDefinition<TInput = unknown, TOutput = unknown> {
   timeoutMs: number;
   /** Required permission scopes (checked by server, not the model) */
   permissions: string[];
-  execute: (input: TInput, ctx: ToolContext) => Promise<ToolResult<TOutput>>;
+  // Method syntax keeps parameter checking bivariant so specific tool
+  // definitions can be stored in the heterogeneous registry.
+  execute(input: TInput, ctx: ToolContext): Promise<ToolResult<TOutput>>;
 }
 
 /** Best-effort Zod → JSON Schema for tool parameters exposed to the model */

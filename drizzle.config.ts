@@ -11,8 +11,9 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "sqlite",
   dbCredentials: {
+    // drizzle-kit's sqlite config accepts only `url`; put ?authToken= on a
+    // Turso URL via TURSO_DATABASE_URL if migrations need auth.
     url: process.env.TURSO_DATABASE_URL ?? "file:local.db",
-    authToken: process.env.TURSO_AUTH_TOKEN,
   },
   verbose: true,
   strict: true,

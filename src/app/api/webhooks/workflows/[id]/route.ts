@@ -9,11 +9,12 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { workflows } from "@/lib/db/schema";
 import { enqueueWorkflowJob } from "@/lib/automation/jobs";
 import { rateLimit, clientKey } from "@/lib/security/rate-limit";
+import { timingSafeEqualStr } from "@/lib/security/compare";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (workflow.webhookSecret !== secret) {
+  if (!timingSafeEqualStr(workflow.webhookSecret, secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

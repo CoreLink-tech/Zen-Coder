@@ -101,11 +101,17 @@ export function createOpenAiCompatibleProvider(
         const message = choice?.message;
         const usage = completion.usage;
 
-        const toolCalls = message?.tool_calls?.map((tc) => ({
-          id: tc.id,
-          name: tc.function.name,
-          arguments: tc.function.arguments,
-        }));
+        const toolCalls = message?.tool_calls?.flatMap((tc) =>
+          tc.type === "function"
+            ? [
+                {
+                  id: tc.id,
+                  name: tc.function.name,
+                  arguments: tc.function.arguments,
+                },
+              ]
+            : []
+        );
 
         const finishMap: Record<
           string,

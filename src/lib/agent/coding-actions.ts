@@ -246,7 +246,7 @@ export async function sendCodingMessage(
   let chargedCredits: number | null = result.estimatedCredits;
   if (result.estimatedCredits && result.estimatedCredits > 0) {
     try {
-      const { deductUsage, InsufficientCreditsError } = await import(
+      const { deductUsage } = await import(
         "@/lib/credits/ledger"
       );
       await deductUsage({
