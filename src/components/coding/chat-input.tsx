@@ -49,9 +49,9 @@ export function ChatInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className="shrink-0 border-t border-border bg-card p-3 sm:p-4"
+      className="shrink-0 border-t border-border bg-card/80 p-3 backdrop-blur sm:p-4"
     >
-      <div className="flex gap-2">
+      <div className="flex items-end gap-2">
         <textarea
           ref={textareaRef}
           value={value}
@@ -60,17 +60,18 @@ export function ChatInput({
           disabled={disabled || sending}
           placeholder={placeholder}
           rows={1}
-          className="max-h-40 min-h-[40px] flex-1 resize-none rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+          className="field max-h-40 min-h-[40px] flex-1 resize-none py-2.5 leading-relaxed"
         />
         <Button
           type="submit"
           disabled={disabled || sending || !value.trim()}
-          className="self-end"
+          size="lg"
+          className="sm:h-10"
         >
           {sending ? "…" : "Send"}
         </Button>
       </div>
-      <p className="mt-1.5 hidden text-xs text-muted-foreground sm:block">
+      <p className="mt-2 hidden text-xs text-muted-foreground sm:block">
         Enter to send · Shift+Enter for new line
       </p>
     </form>

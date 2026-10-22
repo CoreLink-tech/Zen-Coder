@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Plan {
   id: string;
@@ -56,15 +58,18 @@ export function PlansPanel({
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-5">
-      <h2 className="text-sm font-semibold">Plans & credits</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Credits are granted only after verified Stripe payment events — never
-        from the browser alone.
-      </p>
+    <Card>
+      <CardHeader>
+        <CardTitle>Plans and credits</CardTitle>
+        <CardDescription>
+          Credits are granted only after verified Stripe payment events — never
+          from the browser alone.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
 
       {!stripeConfigured && (
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="mb-4 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
           Stripe is not configured. Set{" "}
           <code className="text-xs">STRIPE_SECRET_KEY</code>, webhook secret, and
           price IDs to enable checkout.
@@ -72,35 +77,42 @@ export function PlansPanel({
       )}
 
       {error && (
-        <p className="mt-2 text-sm text-destructive" role="alert">
+        <p className="mb-4 rounded-md border border-destructive/25 bg-destructive-soft px-3 py-2 text-sm text-destructive" role="alert">
           {error}
         </p>
       )}
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-3">
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className="flex flex-col rounded-md border border-border p-3"
+            className={`flex flex-col rounded-lg border p-4 ${
+              plan.id === currentPlanId
+                ? "border-primary/40 bg-primary-soft/40"
+                : "border-border bg-background"
+            }`}
           >
-            <div className="font-medium">{plan.name}</div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-medium text-foreground">{plan.name}</div>
+              {plan.id === currentPlanId && <Badge tone="primary">Current</Badge>}
+            </div>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
               {plan.description}
             </p>
             {plan.monthlyCredits > 0 && (
-              <p className="mt-2 text-xs">
+              <p className="mt-3 text-sm font-medium text-foreground">
                 {plan.monthlyCredits.toLocaleString()} credits / month
               </p>
             )}
-            <ul className="mt-2 flex-1 space-y-1 text-xs text-muted-foreground">
+            <ul className="mt-3 flex-1 space-y-1.5 text-xs text-muted-foreground">
               {plan.features.map((f) => (
                 <li key={f}>· {f}</li>
               ))}
             </ul>
             {plan.id === currentPlanId ? (
-              <p className="mt-3 text-xs font-medium text-primary">Current plan</p>
+              <p className="mt-4 text-xs font-medium text-primary">Your current plan</p>
             ) : plan.id === "free" ? (
-              <p className="mt-3 text-xs text-muted-foreground">Default</p>
+              <p className="mt-4 text-xs text-muted-foreground">Default</p>
             ) : (
               <Button
                 type="button"
@@ -116,10 +128,10 @@ export function PlansPanel({
         ))}
       </div>
 
-      <h3 className="mt-6 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="mb-2 mt-6 text-label">
         Credit packs
       </h3>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {packs.map((pack) => (
           <Button
             key={pack.id}
@@ -133,6 +145,7 @@ export function PlansPanel({
           </Button>
         ))}
       </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

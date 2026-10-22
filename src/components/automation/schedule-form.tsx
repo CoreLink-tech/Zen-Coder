@@ -7,6 +7,8 @@ import {
   disableSchedule,
 } from "@/lib/automation/schedule-actions";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input, Label } from "@/components/ui/input";
 
 interface ScheduleInfo {
   id: string;
@@ -64,37 +66,41 @@ export function ScheduleForm({
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-4">
-      <h3 className="text-sm font-semibold">Schedule</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
+    <Card>
+      <CardHeader>
+        <CardTitle>Schedule</CardTitle>
+        <CardDescription>
         Interval (minutes) or 5-field cron (UTC). Runs via{" "}
-        <code className="text-[10px]">/api/cron/process-jobs</code>.
-      </p>
-
-      <form onSubmit={handleSave} className="mt-3 space-y-3">
-        <div className="flex flex-wrap gap-3">
-          <label className="text-sm">
-            <span className="text-muted-foreground">Type</span>
+        <code className="font-mono text-xs">/api/cron/process-jobs</code>.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+      <form onSubmit={handleSave} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,12rem)_1fr]">
+          <div className="space-y-1.5">
+            <Label htmlFor="schedule-type">Type</Label>
             <select
+              id="schedule-type"
               value={type}
               onChange={(e) =>
                 setType(e.target.value as "interval" | "cron")
               }
-              className="ml-2 rounded-md border border-border bg-background px-2 py-1 text-sm"
+              className="field"
             >
               <option value="interval">Interval (minutes)</option>
               <option value="cron">Cron (UTC)</option>
             </select>
-          </label>
-          <label className="flex-1 text-sm">
-            <span className="text-muted-foreground">Expression</span>
-            <input
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="schedule-expression">Expression</Label>
+            <Input
+              id="schedule-expression"
               value={expression}
               onChange={(e) => setExpression(e.target.value)}
-              className="ml-2 w-full max-w-xs rounded-md border border-border bg-background px-2 py-1 font-mono text-sm"
+              className="font-mono"
               placeholder={type === "interval" ? "15" : "0 * * * *"}
             />
-          </label>
+          </div>
         </div>
 
         {schedule && (
@@ -110,13 +116,13 @@ export function ScheduleForm({
         )}
 
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p role="alert" className="rounded-md border border-destructive/25 bg-destructive-soft px-3 py-2 text-sm text-destructive">
             {error}
           </p>
         )}
-        {message && <p className="text-sm text-success">{message}</p>}
+        {message && <p role="status" className="rounded-md border border-success/25 bg-success-soft px-3 py-2 text-sm text-success">{message}</p>}
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button type="submit" size="sm" disabled={pending}>
             {pending ? "Saving…" : "Save schedule"}
           </Button>
@@ -133,6 +139,7 @@ export function ScheduleForm({
           )}
         </div>
       </form>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
